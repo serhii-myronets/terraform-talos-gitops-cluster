@@ -28,19 +28,14 @@ Before changing anything, read in `~/homelab`:
 
 ## Where things stand
 
-The host has been unreachable since the router was reflashed: it still
-expects 10.1.1.100 on VLAN 10, which the router no longer has. The owner
-means to reinstall Proxmox rather than repair it. What was discussed for the
-reinstall, none of it done yet:
+Proxmox VE 9.2 was reinstalled on 2026-10-03 as `00-prerequisite/README.md`
+describes: ZFS (RAID0) on the single disk with about 10% left unpartitioned,
+`sync=disabled` on `rpool/data`, HA off, the host at 192.168.8.30 on the
+flat LAN. No VMs exist yet. Still to do:
 
-- ZFS (RAID0) on the single disk, `ashift=12`, `lz4`, about 10% left
-  unpartitioned; VM disks then live in `local-zfs`, not `local-lvm`.
-- `sync=disabled` on `rpool/data` only, since the VMs are disposable and
-  etcd's fsyncs would otherwise be written twice.
-- A flat LAN: the host at 192.168.8.30, the lab's VMs and VIP within
-  .31-.49. The router's DHCP pool is .100-.249; core holds .10, .11 and
-  .15-.19. This replaces the 10.1.1.0/24 defaults in `variables.tf`.
-- `pve-ha-lrm` and `pve-ha-crm` off on a standalone host.
+- The lab's VMs and VIP within 192.168.8.31-.49, replacing the 10.1.1.0/24
+  defaults in `variables.tf`. The router's DHCP pool is .100-.249; core
+  holds .10, .11 and .15-.19.
 - A Proxmox API token instead of the root password, kept out of Git.
 - Talos brought to the version core runs, with the `qemu-guest-agent`
   extension, since the VMs enable the agent.

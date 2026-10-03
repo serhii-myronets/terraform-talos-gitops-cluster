@@ -54,79 +54,47 @@ sudo apt update && sudo apt install -y terraform kubectl helmfile helm
 
 Proxmox must be installed directly on the host machine that will run the cluster.
 
-1. Download ISO: https://www.proxmox.com/en/downloads
-2. Flash to USB (e.g., with Balena Etcher)
-3. Boot the machine and install Proxmox
-4. Access the UI: `https://<proxmox-ip>:8006`
+1. Download the ISO from https://www.proxmox.com/en/downloads and check its SHA256 against the site.
+2. Flash it to USB, e.g. with balenaEtcher.
+3. Boot the machine and install Proxmox.
 
 > Ensure virtualization support (VT-x / AMD-V) is enabled in BIOS/UEFI.
+
+The choices made in the installer for this lab's single NVMe disk:
+
+| Setting | Value | Why |
+|---|---|---|
+| Filesystem | `zfs (RAID0)` | ZFS on one disk; RAID0 of a single disk is a plain pool |
+| `ashift`, `compress`, `checksum`, `copies` | `12`, `on`, `on`, `1` | the defaults |
+| ARC max size | the default, about 10% of RAM | |
+| `hdsize` | about 90% of the disk (`1675` of `1863` GB) | unpartitioned space left to the SSD |
+| Network interface | the one with a link | pinned names (`nic0`, `nic1`, ...) are kept |
+| Hostname | `proxmox.home` | |
+| Address, gateway, DNS | `192.168.8.30/24`, `192.168.8.1`, `192.168.8.1` | a static address on the LAN, outside the router's DHCP pool |
+
+The installer creates the `vmbr0` bridge on that interface; the VMs attach to it directly on the same LAN, so the workstation reaches them without a route. VM disks live in `local-zfs` (`rpool/data`).
 
 ---
 
 ## Post-Install Configuration
 
-Run a standard setup script to configure repositories and base settings:
+Run the community post-install script on the host, in an ssh session - it asks questions:
 
 ```bash
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/tools/pve/post-pve-install.sh)"
 ```
 
-This will:
-- Enable community repositories
-- Update package lists
-- Remove subscription notices
-- Apply default Proxmox tweaks
+The answers: the enterprise and Ceph enterprise repositories disabled (or kept, if already disabled), `pve-no-subscription` added, `pvetest` not added, the subscription nag removed, high availability left off, update and reboot.
 
----
-
-## Proxmox Network Configuration
-
-The Kubernetes cluster VMs connect directly to the main network bridge (`vmbr0`). No NAT or isolated bridge is required — VMs receive IPs on the `10.1.1.0/24` subnet and are reachable from your workstation without any additional routing tricks.
-
-> Replace all instances of `enp3s0` with your actual network interface (check via `ip a` or `ip link`).
-
-Example `/etc/network/interfaces`:
-
-```ini
-# loopback
-auto lo
-iface lo inet loopback
-
-# main interface
-auto enp3s0
-iface enp3s0 inet static
-    address  10.1.1.100/24
-    gateway  10.1.1.1
-
-# main bridge for cluster VMs
-auto vmbr0
-iface vmbr0 inet static
-    address  10.1.1.100/24
-    gateway  10.1.1.1
-    bridge-ports enp3s0
-    bridge-stp off
-    bridge-fd 0
-
-source /etc/network/interfaces.d/*
-```
-
-Apply changes with:
+Then the two settings specific to this lab:
 
 ```bash
-ifreload -a
+# The VMs are disposable: their fsyncs, etcd's above all, need not be
+# written twice. The host system on rpool/ROOT keeps sync.
+zfs set sync=disabled rpool/data
 ```
 
----
-
-## Static Route (Local Machine)
-
-To allow your workstation to reach Talos nodes on the cluster network, add a static route:
-
-```bash
-sudo route -n add 10.1.1.0/24 10.1.1.100
-```
-
-Replace `10.1.1.100` with your Proxmox host's IP address if it differs.
+The `powersave` governor, as described in [`cpu-power/`](./cpu-power/README.md).
 
 ---
 
