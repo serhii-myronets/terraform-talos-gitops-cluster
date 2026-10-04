@@ -1,0 +1,41 @@
+# The second external-dns, for .home: it publishes each .home name of an
+# HTTPRoute in the router's BIND over RFC 2136, signed with the lab's TSIG
+# key, as owner lab - core publishes its own as owner core. As core's
+# (core/03-gitops/apps/system/network/external-dns/app/helmrelease-bind.yaml
+# in the homelab repository); see decisions/0039 there.
+provider:
+  name: rfc2136
+
+env:
+  - name: EXTERNAL_DNS_RFC2136_TSIG_SECRET
+    valueFrom:
+      secretKeyRef: {name: bind-tsig, key: TSIG_SECRET}
+
+sources:
+  - gateway-httproute
+extraArgs:
+  - --rfc2136-host=192.168.8.1
+  - --rfc2136-port=5300
+  - --rfc2136-zone=home
+  - --rfc2136-tsig-keyname=lab
+  - --rfc2136-tsig-secret-alg=hmac-sha256
+  - --rfc2136-axfr
+  - --rfc2136-min-ttl=60s
+  # Its own annotation prefix, so it does not read the Gateway's
+  # external-dns.kubernetes.io/target - the Cloudflare tunnel, for the other
+  # external-dns - and answers every name at the Gateway's own address,
+  # 192.168.8.31. See external-dns-follows-the-gateway-target-whatever-the-flags
+  # in the homelab traps.
+  - --annotation-prefix=bind.external-dns.kubernetes.io/
+  # .home names only, and never a wildcard, which would catch core's names.
+  - --regex-domain-filter=\.home$
+  - --regex-domain-exclusion=^\*\.
+
+# Only its own records: core's are owned by core.
+registry: txt
+txtOwnerId: lab
+policy: sync
+
+resources:
+  requests: {cpu: 10m, memory: 32Mi}
+  limits: {memory: 128Mi}
