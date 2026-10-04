@@ -1,0 +1,75 @@
+# The lab's cluster as it runs. Facts about the Proxmox host, the network and
+# the router are in the homelab repository (docs/hosts/proxmox.yaml,
+# docs/network.yaml, docs/hosts/router.yaml). Verified 2026-10-03.
+
+meta:
+  updated: 2026-10-03
+  tags: [lab, talos, kubernetes, cilium, argocd, external-secrets, external-dns]
+
+cluster:
+  name: lab                         # Talos context lab, Kubernetes admin@lab
+  api: https://192.168.8.50:6443    # Layer2 VIP on the control planes' lan link
+  talos: v1.14.1                    # contract v1.14 - decisions/0002
+  kubernetes: v1.37.0
+  built_by: 01-infrastructure, Terraform, state in R2 (homelab-backups,
+    terraform/lab-01-infrastructure.tfstate)
+  nodes:
+    - {name: controlplane-1, ip: 192.168.8.40, vm: 140, cpu: 4, memory_gb: 4}
+    - {name: controlplane-2, ip: 192.168.8.41, vm: 141, cpu: 4, memory_gb: 4}
+    - {name: controlplane-3, ip: 192.168.8.42, vm: 142, cpu: 4, memory_gb: 4}
+    - {name: worker-1, ip: 192.168.8.45, vm: 145, cpu: 8, memory_gb: 18,
+       storage: /var/mnt/storage, 100 GB}
+    - {name: worker-2, ip: 192.168.8.46, vm: 146, cpu: 8, memory_gb: 18,
+       storage: /var/mnt/storage, 100 GB}
+
+bootstrap:                          # 02-bootstrap, Helmfile, context admin@lab
+  cilium: 1.20.2                    # kube-proxy replacement, BPF masquerade, Gateway API
+  external-secrets: 2.11.0
+  argo-cd: 10.9.6                   # Argo CD v3.5.3; anonymous admin
+  gateway_api_crds: v1.6.2
+  root_application: 03-gitops/root.yaml, applied by the postsync hook
+
+network:
+  gateway: main-gateway at 192.168.8.31   # Cilium LB pool 192.168.8.31-35, L2 from the workers
+  listeners: >-
+    One, public: HTTP for *.serhii.link, what the tunnel carries. No .home
+    listener yet, so no .home name is published - it comes with
+    cert-manager and a certificate.
+  tunnel: lab (62ed916d-9072-479d-aa94-263edf64f262), two connectors
+  external_dns:
+    external-dns: serhii.link in Cloudflare, proxied CNAME to the tunnel, owner lab
+    external-dns-bind: .home in the router's BIND over RFC 2136, key lab, owner lab
+
+secrets:
+  infisical_project: proxmox-lab, environment prod
+  identity: lab, read-only on proxmox-lab - decisions/0004
+  store: ClusterSecretStore infisical-cloud
+  keys: >-
+    /system/cloudflare (TUNNEL_CREDENTIALS, DNS_API_TOKEN), /system/bind
+    (TSIG_KEY, TSIG_SECRET), /system/minio, /system/postgresql
+
+applications:                       # 03-gitops/apps/kustomization.yaml - decisions/0005
+  running:
+    - system/network/gateway-system
+    - system/network/cloudflared
+    - system/network/external-dns
+    - system/security/external-secrets
+  waiting_for_review:
+    - system/security/cert-manager
+    - system/storage/openebs
+    - system/storage/minio
+    - system/platform/argocd
+    - system/platform/metrics-server
+    - system/platform/postgresql
+    - system/platform/strimzi
+    - system/observability/fluent-bit
+    - system/observability/grafana
+    - system/observability/kube-state-metrics
+    - system/observability/loki
+    - system/observability/otel-operator
+    - system/observability/prometheus-node-exporter
+    - system/observability/tempo
+    - system/observability/victoria-metrics-operator
+    - system/observability/victoria-metrics-server
+    - services/kafka
+    - services/otel-demo

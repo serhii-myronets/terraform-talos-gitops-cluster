@@ -10,7 +10,7 @@ cloned locally at `~/homelab`.
 | Machine | What it is | Built from |
 |---|---|---|
 | **core** | the cluster the house depends on: Talos on two bare-metal nodes, `controlplane` 192.168.8.10 and `worker-1` .11, Flux | `~/homelab/core/` |
-| **router** | GL.iNet Flint 2 at 192.168.8.1: DNS, DHCP, WireGuard | configured by hand in its UI |
+| **router** | GL.iNet Flint 2 at 192.168.8.1: DNS, DHCP, WireGuard, BIND for `.home` | its UI; Gatus, the exporter and BIND by `~/homelab/router/` |
 | **proxmox** | this lab's hypervisor: i9-12900HK, 62 GB, one Samsung 980 PRO 2 TB | this repository |
 
 Before changing anything, read in `~/homelab`:
@@ -28,22 +28,19 @@ Before changing anything, read in `~/homelab`:
 
 ## Where things stand
 
-Proxmox VE 9.2 was reinstalled on 2026-10-03 as `00-prerequisite/README.md`
-describes: ZFS (RAID0) on the single disk with about 10% left unpartitioned,
-`sync=disabled` on `rpool/data`, HA off, the host at 192.168.8.30 on the
-flat LAN.
+**Read [`docs/index.yaml`](docs/index.yaml) first**, then the last session in
+[`docs/sessions/`](docs/sessions/). The lab's own record lives in `docs/`,
+in the homelab repository's style:
 
-The cluster `lab` was built the same day by `01-infrastructure`: three
-control planes at .40-.42, two workers at .45-.46, the API VIP at .50,
-Talos and Kubernetes on core's versions, with Talos provider 0.12's
-`talos_machine` and `talos_cluster`. Terraform reaches Proxmox with an API
-token in the ignored `proxmox.auto.tfvars`; state is in R2 beside core's.
-The lab keeps its own Argo CD stack rather than copying core's Flux.
+| | |
+|---|---|
+| [`docs/cluster.yaml`](docs/cluster.yaml) | the cluster as it runs: nodes, versions, what is installed, which applications run and which wait for review |
+| [`docs/decisions/`](docs/decisions/) | why the lab is built this way |
+| [`docs/sessions/`](docs/sessions/) | the last working session and what it left open |
 
-`02-bootstrap` is reviewed, not applied: the nodes are `NotReady` until
-Cilium runs. Its postsync hook applies the root Applications, so
-`03-gitops` is to be reviewed first - its cloudflared still claims
-`*.serhii.link`, which core's tunnel now serves.
+Facts about the host, the network and the router stay in `~/homelab/docs/`;
+failures go to its `traps.yaml`. Record here what is the lab's own - and
+replace the session note at the end of a session.
 
 More than half of the host's power cycles have been unsafe shutdowns; a UPS,
 or finding what cuts its power, comes before anything here should last.

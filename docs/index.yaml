@@ -1,0 +1,58 @@
+# Entry point. Read this first, then open only the file that answers the
+# question - every fact lives in exactly one place, here or in the homelab
+# repository (~/homelab, github.com/serhii-myronets/homelab).
+#
+# The lab is a Talos cluster of VMs on the Proxmox host, made to be destroyed
+# and rebuilt: a place to rehearse what core will go through
+# (homelab: docs/decisions/0034).
+#
+#   01-infrastructure   Terraform: the VMs, Talos, etcd's bootstrap
+#   02-bootstrap        Helmfile: Cilium, External Secrets, Argo CD, the root
+#   03-gitops           Argo CD: everything else
+
+meta:
+  updated: 2026-10-03
+  tags: [index, entrypoint, lab]
+
+files:
+  - path: docs/cluster.yaml
+    holds: the cluster now - nodes, versions, releases, applications and their review
+    tags: [lab, talos, kubernetes, argocd]
+  - path: docs/decisions/
+    holds: one file per decision in force; README indexes them
+    tags: [decisions]
+  - path: docs/sessions/
+    holds: the narrative of the last working session
+    tags: [sessions, handoff]
+    read_when: starting work
+  - path: 03-gitops/apps/kustomization.yaml
+    holds: which Argo CD applications run, and which wait for review
+    tags: [argocd, gitops]
+  - path: ~/homelab/docs/hosts/proxmox.yaml
+    holds: the Proxmox host - hardware, disk layout, guests
+    tags: [proxmox, host]
+  - path: ~/homelab/docs/network.yaml
+    holds: addresses, the lab's block .30-.50, DNS, what is free
+    tags: [network, dns]
+  - path: ~/homelab/docs/traps.yaml
+    holds: Talos, Cilium, external-dns and storage failures already met on core
+    tags: [traps, debugging]
+    read_when: anything that should work does not
+
+answers:                     # question -> file, so a lookup costs one read
+  what is running right now: docs/cluster.yaml, then 03-gitops/apps/kustomization.yaml
+  what is still to review: docs/cluster.yaml, applications
+  how is the lab built: README.md and the README of each stage
+  why is it built this way: docs/decisions/
+  what is the IP of X: ~/homelab/docs/network.yaml
+  what about the host itself: ~/homelab/docs/hosts/proxmox.yaml
+  why is this failing: ~/homelab/docs/traps.yaml
+  what did we do last time: docs/sessions/
+
+rules:                       # the full set is in AGENTS.md
+  - Verify against the live cluster before writing a fact down.
+  - A fact belongs in one file; facts about the host, the network and the
+    router belong in the homelab repository.
+  - New failure mode -> the homelab repository's traps.yaml. Choice with a
+    rejected alternative -> decisions/. Narrative of a session -> sessions/.
+  - Commits name one author, the owner. No agent attribution anywhere.
