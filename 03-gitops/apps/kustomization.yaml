@@ -20,6 +20,7 @@ resources:
   # platform
   - system/platform/argocd/application.yaml
   - system/platform/metrics-server/application.yaml
+  - system/platform/cloudnative-pg/application.yaml
   # observability
   - system/observability/victoria-metrics/application.yaml
   - system/observability/hubble/application.yaml

@@ -1,0 +1,9 @@
+# CloudNativePG 1.30. Backups, when a database needs them, go through the
+# Barman Cloud plugin - a chart of its own, added with the lab's R2 bucket.
+
+resources:
+  requests:
+    cpu: 10m
+    memory: 64Mi
+  limits:
+    memory: 256Mi

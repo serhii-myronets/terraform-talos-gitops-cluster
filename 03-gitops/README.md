@@ -13,7 +13,7 @@ Everything Argo CD runs on the lab, laid out as core's `core/03-gitops/apps` is 
 │   │   ├── network/          gateway-system, cloudflared, external-dns
 │   │   ├── security/         external-secrets, cert-manager
 │   │   ├── storage/          proxmox-csi
-│   │   ├── platform/         argocd, metrics-server
+│   │   ├── platform/         argocd, metrics-server, cloudnative-pg
 │   │   └── observability/    victoria-metrics, hubble
 │   └── services/             none yet
 ```

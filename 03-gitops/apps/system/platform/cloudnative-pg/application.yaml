@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cloudnative-pg
+  namespace: argocd
+spec:
+  project: default
+  # The Postgres operator: it runs a database for each Cluster resource it
+  # finds, wherever it is. The databases are not here - each lives with the
+  # service it belongs to, in that service's app/.
+  source:
+    repoURL: https://github.com/serhii-myronets/terraform-talos-gitops-cluster.git
+    targetRevision: homelab
+    path: 03-gitops/apps/system/platform/cloudnative-pg/app
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: cnpg-system
+  syncPolicy:
+    automated: {}
+    syncOptions:
+      # The operator's CRDs are larger than the annotation a client-side
+      # apply keeps the last configuration in.
+      - ServerSideApply=true
