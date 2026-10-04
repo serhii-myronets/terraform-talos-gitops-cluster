@@ -52,9 +52,11 @@ releases:
       - external-secrets/external-secrets
     values:
       - values/argocd-values.yaml
-    hooks:
-      # The four root Applications; from here Argo CD syncs 03-gitops.
-      - events: ["postsync"]
-        showlogs: true
-        command: kubectl
-        args: ["--context", "admin@lab", "apply", "-f", "../03-gitops/applications/"]
+    # The four root Applications, from which Argo CD syncs 03-gitops. Off
+    # while 03-gitops is reviewed and its applications are applied one at a
+    # time; back on once every one of them is kept.
+    # hooks:
+    #   - events: ["postsync"]
+    #     showlogs: true
+    #     command: kubectl
+    #     args: ["--context", "admin@lab", "apply", "-f", "../03-gitops/applications/"]

@@ -16,7 +16,7 @@ Every command is pinned to the kubeconfig context `admin@lab`, hooks included, s
 2. **cilium** - CNI and kube-proxy replacement with BPF masquerading, Gateway API, L2 announcements, Hubble and Prometheus metrics. Its values follow core's; every container has a memory limit, so Talos's OOM controller never picks Cilium.
 3. **external-secrets** - the controller and its CRDs, before anything in 03-gitops asks for a secret; the `ClusterSecretStore` it serves is Argo CD's. Same values as core's.
 4. **argocd** - installs its own CRDs. Argo CD then manages itself from the same chart and values (`03-gitops/applications/00-core/argocd.yaml`, whose chart version moves with this one).
-5. **postsync hook of argocd** - `kubectl apply -f ../03-gitops/applications/`: the four root Applications.
+5. **postsync hook of argocd** - `kubectl apply -f ../03-gitops/applications/`: the four root Applications. Commented out while 03-gitops is reviewed: its applications are applied one at a time, and the roots come back once all are kept.
 
 ## Before the first run
 
