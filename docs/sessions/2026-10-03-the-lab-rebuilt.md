@@ -58,8 +58,13 @@ refused; lab-ca, an intermediate limited to .home, was signed on the Mac and
 issues the Gateway's certificate, which the Mac trusted without a change
 (decisions/0006). The Gateway took core's listeners.
 
+argocd came back as its route only - Argo CD stays 02-bootstrap's release,
+upgraded with helmfile (decisions/0003) - and its anonymous admin stays, at
+the owner's choice. It was the first name through the whole chain:
+argocd.home in BIND as owner lab, answered over HTTPS with lab-ca's
+certificate and trusted as it was; argocd.serhii.link in Cloudflare, behind
+Access's login.
+
 Still open:
-- argocd next: its route is argocd.home's first, and its anonymous admin is
-  the lab's weakest point now that it holds lab-ca.
 - The rest of the review, in apps/kustomization.yaml order.
 - An ApplicationSet once every application is reviewed.
