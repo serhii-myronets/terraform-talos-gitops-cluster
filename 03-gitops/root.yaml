@@ -1,0 +1,22 @@
+# The one root Application, as core's flux.yaml is its root: applied once, by
+# 02-bootstrap's postsync hook or by hand, and from then on Argo CD reads
+# apps/kustomization.yaml and keeps every Application listed there.
+#
+# No prune: an Application taken off the list stays until it is deleted on
+# purpose, with what it deployed.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: root
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/serhii-myronets/terraform-talos-gitops-cluster.git
+    targetRevision: homelab
+    path: 03-gitops/apps
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated: {}

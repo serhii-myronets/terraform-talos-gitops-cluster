@@ -49,16 +49,7 @@ Nodes, addresses, versions and VM sizes are set in [`01-infrastructure/locals.tf
 | [`03-gitops/`](./03-gitops/README.md) | Argo CD Applications, Helm values and Kubernetes resources |
 | [`assets/`](./assets/) | Documentation screenshots |
 
-Inside `03-gitops`, applications are organized into four tiers:
-
-```text
-00-core          Argo CD, cert-manager, Gateway API, secrets, storage, MinIO, metrics-server
-01-platform      PostgreSQL and Strimzi operator
-02-services      Kafka and OpenTelemetry Demo
-03-observability Grafana, Loki, Tempo, VictoriaMetrics, OpenTelemetry and exporters
-```
-
-`03-gitops/components/99-archive/` contains retired or experimental components and is not part of the active Argo CD tree.
+Inside `03-gitops`, applications are laid out as core's are in the homelab repository: `apps/system/<category>/<name>` and `apps/services/<name>`, each an `application.yaml` beside its `app/` folder. `apps/kustomization.yaml` lists the ones that run; `archive/` holds retired components that nothing reads.
 
 ## Deployment flow
 
@@ -67,7 +58,7 @@ Follow the stage-specific README files in order:
 1. [Prepare the workstation and Proxmox host](./00-prerequisite/README.md).
 2. [Provision Talos VMs with Terraform](./01-infrastructure/README.md).
 3. [Bootstrap Cilium and Argo CD](./02-bootstrap/README.md) with Helmfile.
-4. [Apply the GitOps application tiers](./03-gitops/README.md) through Argo CD.
+4. [Let Argo CD run 03-gitops](./03-gitops/README.md) - the bootstrap applies its root Application.
 
 ```bash
 # Run from 01-infrastructure
@@ -77,22 +68,16 @@ terraform apply
 f=$(mktemp) && terraform output -raw talosconfig > "$f" && talosctl config merge "$f"; rm -f "$f"
 talosctl --context lab -n 192.168.8.40 kubeconfig
 
-# Then bootstrap
+# Then bootstrap: Cilium, External Secrets, Argo CD, and the root Application
 cd ../02-bootstrap
 helmfile apply
-
-# Finally apply the Argo CD application roots
-kubectl apply -f ../03-gitops/applications/00-core-root.yaml
-kubectl apply -f ../03-gitops/applications/01-platform-root.yaml
-kubectl apply -f ../03-gitops/applications/02-services-root.yaml
-kubectl apply -f ../03-gitops/applications/03-observability.yaml
 ```
 
 Do not commit real Proxmox credentials or bootstrap secrets. Use the example secret template and the configured Infisical integration for runtime secrets.
 
 ## Access and verification
 
-Internal services are exposed through Cilium Gateway API resources. Active routes live alongside component configuration under `03-gitops/components/`. External access is provided by Cloudflare Tunnel; DNS and tunnel credentials are environment-specific.
+Internal services are exposed through Cilium Gateway API resources. Each route lives in its application's `app/` folder under `03-gitops/apps/`. External access is provided by Cloudflare Tunnel; DNS and tunnel credentials are environment-specific.
 
 ```bash
 kubectl get nodes

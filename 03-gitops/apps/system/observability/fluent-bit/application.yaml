@@ -1,0 +1,31 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: fluent-bit
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "10"
+spec:
+  project: default
+  sources:
+    - repoURL: https://github.com/serhii-myronets/terraform-talos-gitops-cluster.git
+      targetRevision: homelab
+      path: 03-gitops/apps/system/observability/fluent-bit/app
+
+    - repoURL: https://fluent.github.io/helm-charts
+      chart: fluent-bit-collector
+      targetRevision: 1.0.0-beta.2
+      helm:
+        valueFiles:
+          - $values/03-gitops/apps/system/observability/fluent-bit/app/values.yaml
+
+    - repoURL: https://github.com/serhii-myronets/terraform-talos-gitops-cluster.git
+      targetRevision: homelab
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: observability
+  syncPolicy:
+    automated: {}
+    syncOptions:
+      - CreateNamespace=true

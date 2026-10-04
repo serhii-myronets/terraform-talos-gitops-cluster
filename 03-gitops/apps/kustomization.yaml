@@ -1,0 +1,34 @@
+# What Argo CD runs: one Application per line, each beside its own files in
+# app/. Laid out as core's apps/ is - system/<category>/<name> and
+# services/<name>.
+#
+# An application is listed only once it has been reviewed for the lab; the
+# rest wait under apps/ unlisted, and listing one is what deploys it.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  # network
+  - system/network/gateway-system/application.yaml
+  - system/network/cloudflared/application.yaml
+  - system/network/external-dns/application.yaml
+  # security
+  - system/security/external-secrets/application.yaml
+  # Not yet reviewed:
+  # - system/security/cert-manager/application.yaml
+  # - system/storage/openebs/application.yaml
+  # - system/storage/minio/application.yaml
+  # - system/platform/argocd/application.yaml
+  # - system/platform/metrics-server/application.yaml
+  # - system/platform/postgresql/application.yaml
+  # - system/platform/strimzi/application.yaml
+  # - system/observability/fluent-bit/application.yaml
+  # - system/observability/grafana/application.yaml
+  # - system/observability/kube-state-metrics/application.yaml
+  # - system/observability/loki/application.yaml
+  # - system/observability/otel-operator/application.yaml
+  # - system/observability/prometheus-node-exporter/application.yaml
+  # - system/observability/tempo/application.yaml
+  # - system/observability/victoria-metrics-operator/application.yaml
+  # - system/observability/victoria-metrics-server/application.yaml
+  # - services/kafka/application.yaml
+  # - services/otel-demo/application.yaml

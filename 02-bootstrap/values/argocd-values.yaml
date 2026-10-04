@@ -1,5 +1,5 @@
 # Read by the bootstrap release and by the Application through which Argo CD
-# manages itself (03-gitops/applications/00-core/argocd.yaml).
+# manages itself (03-gitops/apps/system/platform/argocd).
 
 # The chart installs and upgrades its own CRDs, and keeps them on uninstall.
 crds:

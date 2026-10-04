@@ -1,0 +1,32 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argocd
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+spec:
+  project: default
+  sources:
+    - repoURL: https://github.com/serhii-myronets/terraform-talos-gitops-cluster.git
+      targetRevision: homelab
+      path: 03-gitops/apps/system/platform/argocd/app
+
+    - repoURL: https://argoproj.github.io/argo-helm
+      chart: argo-cd
+      targetRevision: 10.9.6
+      helm:
+        valueFiles:
+          - $values/02-bootstrap/values/argocd-values.yaml
+
+    - repoURL: https://github.com/serhii-myronets/terraform-talos-gitops-cluster.git
+      targetRevision: homelab
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated: {}
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

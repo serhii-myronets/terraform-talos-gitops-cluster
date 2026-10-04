@@ -31,7 +31,7 @@ releases:
 
   # Before Argo CD, so every ExternalSecret in 03-gitops finds a running
   # controller. Its ClusterSecretStore is Argo CD's, in
-  # 03-gitops/components/00-core/external-secrets.
+  # 03-gitops/apps/system/security/external-secrets.
   - name: external-secrets
     namespace: external-secrets
     chart: external-secrets/external-secrets
@@ -42,7 +42,7 @@ releases:
       - values/external-secrets-values.yaml
 
   # Argo CD then manages itself from the same chart and values:
-  # 03-gitops/applications/00-core/argocd.yaml, whose chart version moves with
+  # 03-gitops/apps/system/platform/argocd, whose chart version moves with
   # this one.
   - name: argocd
     namespace: argocd
@@ -52,11 +52,10 @@ releases:
       - external-secrets/external-secrets
     values:
       - values/argocd-values.yaml
-    # The four root Applications, from which Argo CD syncs 03-gitops. Off
-    # while 03-gitops is reviewed and its applications are applied one at a
-    # time; back on once every one of them is kept.
-    # hooks:
-    #   - events: ["postsync"]
-    #     showlogs: true
-    #     command: kubectl
-    #     args: ["--context", "admin@lab", "apply", "-f", "../03-gitops/applications/"]
+    hooks:
+      # The root Application, from which Argo CD runs what
+      # 03-gitops/apps/kustomization.yaml lists.
+      - events: ["postsync"]
+        showlogs: true
+        command: kubectl
+        args: ["--context", "admin@lab", "apply", "-f", "../03-gitops/root.yaml"]
