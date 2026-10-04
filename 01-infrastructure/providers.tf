@@ -41,6 +41,6 @@ provider "proxmox" {
 }
 
 # Infisical as the owner: the token of the CLI session `infisical login`
-# opened, which .envrc beside this file exports - nothing here or in a tfvars
-# file. See docs/decisions/0009.
+# opened, handed to each run by a terraform function in ~/.zshrc - nothing
+# here or in a tfvars file. See README.md, "Infisical", and docs/decisions/0009.
 provider "infisical" {}
