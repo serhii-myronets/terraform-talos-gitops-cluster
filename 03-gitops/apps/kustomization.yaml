@@ -15,7 +15,6 @@ resources:
   # security
   - system/security/external-secrets/application.yaml
   - system/security/cert-manager/application.yaml
-  - system/security/tetragon/application.yaml
   # storage
   - system/storage/proxmox-csi/application.yaml
   # platform

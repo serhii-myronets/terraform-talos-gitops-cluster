@@ -77,7 +77,6 @@ applications:                       # 03-gitops/apps/kustomization.yaml - decisi
     - system/network/external-dns
     - system/security/external-secrets
     - system/security/cert-manager       # v1.21.2
-    - system/security/tetragon           # chart 1.7.1; events to core's VictoriaLogs through vlagent
     - system/storage/proxmox-csi         # chart 0.5.12
     - system/platform/argocd             # its route only; Argo CD is 02-bootstrap's
     - system/platform/metrics-server     # chart 3.14.0

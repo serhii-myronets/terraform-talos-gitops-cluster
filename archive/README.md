@@ -5,7 +5,7 @@ not this directory, so nothing here is deployed, and versions are as they
 were left - review them before bringing anything back.
 
 Most are from the lab before its rebuild in 2026-10, in the old layout: a
-component folder of values and manifests, with its Application gone. Three are
+component folder of values and manifests, with its Application gone. Four are
 already in the current layout and move back as they are:
 
 - **openebs** - `application.yaml` beside `app/`, OpenEBS 4.1.1 with
@@ -20,6 +20,16 @@ already in the current layout and move back as they are:
   second stack in pieces. Replaced on 2026-10-04 by
   `system/observability/victoria-metrics`, the lab's agents writing to
   core's stores (docs/decisions/0008).
+
+- **tetragon** - Cilium's eBPF runtime security, chart 1.7.1, run for an
+  evening on 2026-10-04 to learn it: every process in every pod, files and
+  connections through a TracingPolicy, and a kill from the kernel. Taken
+  off the same day. Its events answer what logs cannot - what ran inside a
+  container, written by no one inside it - but they are worth keeping only
+  where someone watches them, a security team with alerts; in a lab with one
+  user and no code of anyone else's they were five pods and noise in core's
+  log store. Its CRDs are made by its operator, not by Argo CD, and were
+  deleted by hand with it.
 
 - **awaiting-review** - five applications carried over from the earlier
   lab and not yet reviewed, in the current layout but still in the older
