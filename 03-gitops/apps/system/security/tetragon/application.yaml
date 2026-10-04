@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: tetragon
+  namespace: argocd
+spec:
+  project: default
+  # Cilium's eBPF runtime security: what runs inside each pod - processes,
+  # files, connections - seen from the kernel. The chart is in
+  # app/kustomization.yaml; policies, when there are any, beside it.
+  source:
+    repoURL: https://github.com/serhii-myronets/terraform-talos-gitops-cluster.git
+    targetRevision: homelab
+    path: 03-gitops/apps/system/security/tetragon/app
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kube-system
+  syncPolicy:
+    automated: {}
+    syncOptions:
+      - ServerSideApply=true

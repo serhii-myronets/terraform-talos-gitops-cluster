@@ -1,0 +1,27 @@
+# Tetragon 1.7. An agent on every node loads eBPF programs into the kernel
+# and reports what the pods' processes do; the export-stdout container beside
+# it prints each event as a line of JSON, which vlagent ships to core's
+# VictoriaLogs with every other pod log (docs/decisions/0008).
+
+tetragon:
+  clusterName: lab
+  # The chart's own filters stay: no events from kube-system, cilium or the
+  # host itself, none from health checks. A cap besides, so a noisy pod
+  # cannot fill core's log store - events past it are counted and dropped.
+  exportRateLimit: 1000
+  # A password typed on a command line stays out of the log.
+  redactionFilters: |-
+    {"redact": ["(?:--password|-p)(?:\\s+|=)(\\S*)"]}
+  resources:
+    requests: {cpu: 20m, memory: 128Mi}
+    limits: {memory: 512Mi}
+
+tetragonOperator:
+  resources:
+    requests: {cpu: 10m, memory: 32Mi}
+    limits: {memory: 128Mi}
+
+export:
+  resources:
+    requests: {cpu: 5m, memory: 16Mi}
+    limits: {memory: 64Mi}

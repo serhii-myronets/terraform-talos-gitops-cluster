@@ -11,7 +11,7 @@ Everything Argo CD runs on the lab, laid out as core's `core/03-gitops/apps` is 
 │   ├── kustomization.yaml    which Applications run - one line each
 │   ├── system/
 │   │   ├── network/          gateway-system, cloudflared, external-dns
-│   │   ├── security/         external-secrets, cert-manager
+│   │   ├── security/         external-secrets, cert-manager, tetragon
 │   │   ├── storage/          proxmox-csi
 │   │   ├── platform/         argocd, metrics-server, cloudnative-pg
 │   │   └── observability/    victoria-metrics, hubble
