@@ -47,9 +47,10 @@ Nodes, addresses, versions and VM sizes are set in [`01-infrastructure/locals.tf
 | [`01-infrastructure/`](./01-infrastructure/README.md) | Terraform resources, Talos image/config generation and machine patches |
 | [`02-bootstrap/`](./02-bootstrap/README.md) | Helmfile bootstrap for Cilium and Argo CD |
 | [`03-gitops/`](./03-gitops/README.md) | Argo CD Applications, Helm values and Kubernetes resources |
-| [`assets/`](./assets/) | Documentation screenshots |
+| [`docs/`](./docs/README.md) | the lab's record: the cluster as it runs, decisions, the last session |
+| [`archive/`](./archive/README.md) | what the lab ran once, kept whole; nothing reads it |
 
-Inside `03-gitops`, applications are laid out as core's are in the homelab repository: `apps/system/<category>/<name>` and `apps/services/<name>`, each an `application.yaml` beside its `app/` folder. `apps/kustomization.yaml` lists the ones that run; `archive/` holds retired components that nothing reads.
+Inside `03-gitops`, applications are laid out as core's are in the homelab repository: `apps/system/<category>/<name>` and `apps/services/<name>`, each an `application.yaml` beside its `app/` folder. `apps/kustomization.yaml` lists the ones that run.
 
 ## Deployment flow
 
@@ -84,13 +85,3 @@ kubectl get nodes
 cilium status --wait
 kubectl get applications -A
 ```
-
-## Screenshots
-
-| Proxmox | Argo CD |
-|:---:|:---:|
-| <img src="./assets/proxmox.png" width="400"/> | <img src="./assets/argocd.png" width="400"/> |
-
-| Grafana | Tempo |
-|:---:|:---:|
-| <img src="./assets/grafana.png" width="400"/> | <img src="./assets/tempo.png" width="400"/> |

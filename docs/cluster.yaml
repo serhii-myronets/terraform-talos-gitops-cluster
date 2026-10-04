@@ -63,7 +63,6 @@ applications:                       # 03-gitops/apps/kustomization.yaml - decisi
     - system/platform/argocd             # its route only; Argo CD is 02-bootstrap's
     - system/platform/metrics-server     # chart 3.14.0
   waiting_for_review:
-    - system/storage/openebs
     - system/storage/minio
     - system/platform/postgresql
     - system/platform/strimzi

@@ -12,11 +12,10 @@ Everything Argo CD runs on the lab, laid out as core's `core/03-gitops/apps` is 
 │   ├── system/
 │   │   ├── network/          gateway-system, cloudflared, external-dns
 │   │   ├── security/         external-secrets, cert-manager
-│   │   ├── storage/          openebs, minio
+│   │   ├── storage/          proxmox-csi, minio
 │   │   ├── platform/         argocd, metrics-server, postgresql, strimzi
 │   │   └── observability/    grafana, loki, tempo, victoria-metrics-*, otel-operator, ...
 │   └── services/             kafka, otel-demo
-└── archive/                  retired components; nothing reads them
 ```
 
 Each application is a folder: `application.yaml`, the Argo CD Application, and `app/`, everything it deploys. `app/kustomization.yaml` lists the manifests and renders Helm charts with `helmCharts:` from the values beside it, so the Application has one source - the folder. Applications not yet reviewed still use the older multi-source form, a chart plus `$values`, until their review moves them.

@@ -18,7 +18,6 @@ resources:
   - system/platform/argocd/application.yaml
   - system/platform/metrics-server/application.yaml
   # Not yet reviewed:
-  # - system/storage/openebs/application.yaml
   # - system/storage/minio/application.yaml
   # - system/platform/postgresql/application.yaml
   # - system/platform/strimzi/application.yaml
