@@ -1,7 +1,0 @@
-webhook:
-  create: false
-
-certController:
-  create: false
-
-installCRDs: false

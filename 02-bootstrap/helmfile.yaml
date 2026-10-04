@@ -9,6 +9,8 @@ repositories:
     url: https://argoproj.github.io/argo-helm
   - name: cilium
     url: https://helm.cilium.io
+  - name: external-secrets
+    url: https://charts.external-secrets.io
 
 hooks:
   # Runs before every command, diff included - see
@@ -27,6 +29,18 @@ releases:
     values:
       - values/cilium-values.yaml
 
+  # Before Argo CD, so every ExternalSecret in 03-gitops finds a running
+  # controller. Its ClusterSecretStore is Argo CD's, in
+  # 03-gitops/components/00-core/external-secrets.
+  - name: external-secrets
+    namespace: external-secrets
+    chart: external-secrets/external-secrets
+    version: 2.11.0
+    needs:
+      - kube-system/cilium
+    values:
+      - values/external-secrets-values.yaml
+
   # Argo CD then manages itself from the same chart and values:
   # 03-gitops/applications/00-core/argocd.yaml, whose chart version moves with
   # this one.
@@ -35,7 +49,7 @@ releases:
     chart: argo/argo-cd
     version: 10.9.6
     needs:
-      - kube-system/cilium
+      - external-secrets/external-secrets
     values:
       - values/argocd-values.yaml
     hooks:
