@@ -58,7 +58,8 @@ secrets:
   keys: >-
     /system/cloudflare (TUNNEL_CREDENTIALS, DNS_API_TOKEN), /system/bind
     (TSIG_KEY, TSIG_SECRET), /system/lab-ca (TLS_CRT, TLS_KEY, CA_CRT),
-    /system/proxmox-csi (TOKEN_ID, TOKEN_SECRET), /system/minio,
+    /system/proxmox-csi (TOKEN_ID, TOKEN_SECRET), /system/observability
+    (INGEST_TOKEN, write-only on core - decisions/0008), /system/minio,
     /system/postgresql
 
 applications:                       # 03-gitops/apps/kustomization.yaml - decisions/0005
@@ -71,18 +72,10 @@ applications:                       # 03-gitops/apps/kustomization.yaml - decisi
     - system/storage/proxmox-csi         # chart 0.5.12
     - system/platform/argocd             # its route only; Argo CD is 02-bootstrap's
     - system/platform/metrics-server     # chart 3.14.0
+    - system/observability/victoria-metrics  # chart 0.95.0, agents only, writing to core - decisions/0008
   waiting_for_review:
     - system/storage/minio
     - system/platform/postgresql
     - system/platform/strimzi
-    - system/observability/fluent-bit
-    - system/observability/grafana
-    - system/observability/kube-state-metrics
-    - system/observability/loki
-    - system/observability/otel-operator
-    - system/observability/prometheus-node-exporter
-    - system/observability/tempo
-    - system/observability/victoria-metrics-operator
-    - system/observability/victoria-metrics-server
     - services/kafka
     - services/otel-demo
