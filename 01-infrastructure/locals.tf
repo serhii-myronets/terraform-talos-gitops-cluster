@@ -1,7 +1,10 @@
 locals {
   proxmox = {
-    endpoint  = "https://192.168.8.30:8006/"
-    node      = "proxmox"
+    endpoint = "https://192.168.8.30:8006/"
+    node     = "proxmox"
+    # The topology Proxmox CSI places volumes by: region names the Proxmox
+    # "cluster" in its configuration, zone the host. Every node carries both.
+    region    = "proxmox"
     bridge    = "vmbr0"
     datastore = "local-zfs" # VM disks: rpool/data, sync=disabled
     images    = "local"     # downloaded images, content type import
@@ -30,8 +33,8 @@ locals {
   # controller never picks them. The rest goes to the workers; with the ZFS ARC
   # (6.4 GB) about 7 GB of the host's 62 stays free.
   sizes = {
-    controlplane = { cpu = 4, memory = 4096, disk = 20, data_disk = 0 }
-    worker       = { cpu = 8, memory = 18432, disk = 40, data_disk = 100 }
+    controlplane = { cpu = 4, memory = 4096, disk = 20 }
+    worker       = { cpu = 8, memory = 18432, disk = 40 }
   }
 
   nodes = {

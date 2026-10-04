@@ -19,11 +19,11 @@ Terraform that builds the lab's Talos cluster on the Proxmox host: the VMs, each
 |---|---|---|---|---|
 | Kubernetes API (VIP) | 192.168.8.50 | | | |
 | `controlplane-1..3` | .40-.42 | 4 | 4 GB | 20 GB |
-| `worker-1..2` | .45-.46 | 8 | 18 GB | 40 GB + 100 GB at `/var/mnt/storage` |
+| `worker-1..2` | .45-.46 | 8 | 18 GB | 40 GB |
 
 Talos v1.14.1 and Kubernetes v1.37.0, the versions core runs. The VMs' disks are on `local-zfs`, imported from the Image Factory's qcow2 image with the `qemu-guest-agent` extension. Each node's address, gateway and resolver come from Proxmox's cloud-init drive.
 
-The patches use the v1.14 configuration contract, where each part of the configuration is a document of its own: Flannel is removed and kube-proxy disabled for Cilium, the network card is aliased `lan` for the VIP, the control-plane components carry memory limits, and each worker's second disk is the user volume `storage`.
+The patches use the v1.14 configuration contract, where each part of the configuration is a document of its own: Flannel is removed and kube-proxy disabled for Cilium, the network card is aliased `lan` for the VIP and the control-plane components carry memory limits. Every node is labelled with its Proxmox topology - region `proxmox`, zone the host - which Proxmox CSI places volumes by.
 
 ## Before the first run
 

@@ -54,20 +54,6 @@ resource "proxmox_virtual_environment_vm" "node" {
     ssd          = true
   }
 
-  # The workers' second disk, Talos's user volume `storage` for OpenEBS
-  # hostpath (patches/worker.yaml).
-  dynamic "disk" {
-    for_each = local.sizes[each.value.role].data_disk > 0 ? [local.sizes[each.value.role].data_disk] : []
-    content {
-      interface    = "scsi1"
-      datastore_id = local.proxmox.datastore
-      size         = disk.value
-      iothread     = true
-      discard      = "on"
-      ssd          = true
-    }
-  }
-
   boot_order = ["scsi0"]
 
   operating_system {

@@ -39,7 +39,6 @@ data "talos_machine_configuration" "node" {
   config_patches = concat(
     [
       file("${path.module}/patches/common.yaml"),
-      file("${path.module}/patches/${each.value.role}.yaml"),
       yamlencode({
         apiVersion = "v1alpha1"
         kind       = "HostnameConfig"
@@ -57,6 +56,17 @@ data "talos_machine_configuration" "node" {
         provisioning = { diskSelector = { match = "disk.dev_path == \"/dev/sda\"" } }
       }),
     ],
+    # A role's own patch, where it has one.
+    fileexists("${path.module}/patches/${each.value.role}.yaml") ? [file("${path.module}/patches/${each.value.role}.yaml")] : [],
+    # Where Proxmox CSI may attach a volume to this node: the host it runs on.
+    [yamlencode({
+      apiVersion = "v1alpha1"
+      kind       = "KubeNodeConfig"
+      labels = {
+        "topology.kubernetes.io/region" = local.proxmox.region
+        "topology.kubernetes.io/zone"   = local.proxmox.node
+      }
+    })],
     each.value.role == "controlplane" ? [
       yamlencode({
         apiVersion = "v1alpha1"

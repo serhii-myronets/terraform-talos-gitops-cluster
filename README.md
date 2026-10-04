@@ -15,7 +15,7 @@ The repository is split into three deployment stages:
 - 3 control-plane nodes and 2 workers
 - Cilium as the CNI, with kube-proxy replacement, eBPF, Hubble and Gateway API
 - Argo CD managing the rest of the cluster from the `homelab` branch
-- OpenEBS for worker-node storage
+- Proxmox CSI: persistent volumes as disks of the host's ZFS pool, attached to whichever worker runs the pod
 - External Secrets Operator backed by Infisical
 - Cilium Gateway API (`Gateway`/`HTTPRoute`) for service exposure
 - PostgreSQL and Strimzi-managed Kafka
@@ -37,7 +37,7 @@ Proxmox VE (192.168.8.30)
     └── Kubernetes API VIP:    192.168.8.50
 ```
 
-Nodes, addresses, versions and VM sizes are set in [`01-infrastructure/locals.tf`](./01-infrastructure/locals.tf). Each worker has a second 100 GB disk for OpenEBS.
+Nodes, addresses, versions and VM sizes are set in [`01-infrastructure/locals.tf`](./01-infrastructure/locals.tf). Workers have no data disks of their own: persistent volumes come from the host's ZFS pool through Proxmox CSI.
 
 ## Repository layout
 
