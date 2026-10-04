@@ -96,6 +96,18 @@ zfs set sync=disabled rpool/data
 
 The `powersave` governor, as described in [`cpu-power/`](./cpu-power/README.md).
 
+### ProxMenux
+
+[ProxMenux](https://github.com/MacRimi/ProxMenux): a menu for the host's routine tasks (`menu` in a shell on it) and ProxMenux Monitor, a web dashboard for its hardware, disks, temperatures and guests. Its installer asks questions, so it runs in an ssh session on the host, as the post-install script does:
+
+```bash
+bash -c "$(wget -qLO - https://raw.githubusercontent.com/MacRimi/ProxMenux/main/install_proxmenux.sh)"
+```
+
+It installs `dialog`, `curl`, `jq` and `git` from Debian, its files under `/usr/local/share/proxmenux`, and the Monitor as the systemd service `proxmenux-monitor` on port 8008. It updates itself from its own menu; nothing here pins a version.
+
+Then, in the Monitor at `http://192.168.8.30:8008`, turn on its login - and two-factor if wanted. Anything on the LAN reaches that port, and without a login the dashboard and its API answer anyone.
+
 ---
 
 ## Navigation
