@@ -38,6 +38,19 @@ resource "infisical_secret" "kubeconfig" {
   value_wo_version = local.clients_version
 }
 
+# The same kubeconfig for core's Headlamp, which shows the lab beside core:
+# written into core's project, where core's External Secrets read it (the
+# homelab repository's decisions/0042). Core holding the lab's admin
+# credentials is the safe way round - core is the more trusted cluster.
+resource "infisical_secret" "headlamp_kubeconfig" {
+  workspace_id     = "0f683ac6-7321-435c-935e-3e68f72f2d60" # homelab, core's project
+  env_slug         = "prod"
+  folder_path      = "/system/headlamp"
+  name             = "LAB_KUBECONFIG"
+  value_wo         = ephemeral.talos_cluster_kubeconfig.admin.kubeconfig_raw
+  value_wo_version = local.clients_version
+}
+
 # This Mac's contexts, from Infisical: scripts/contexts.sh replaces the lab's
 # context in each file and leaves every other cluster's alone. On another
 # machine, `terraform apply -replace=terraform_data.contexts` adds them there.

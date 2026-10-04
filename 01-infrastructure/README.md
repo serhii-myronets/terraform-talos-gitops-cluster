@@ -9,7 +9,7 @@ Terraform that builds the lab's Talos cluster on the Proxmox host: the VMs, each
 | [`locals.tf`](./locals.tf) | everything that is set: Proxmox, the network, versions, VM sizes, the nodes |
 | [`proxmox_nodes.tf`](./proxmox_nodes.tf) | the Talos image and the VMs |
 | [`talos_configs.tf`](./talos_configs.tf) | the image schematic, the Talos secrets from Infisical, machine configurations, `talos_machine` and `talos_cluster` |
-| [`clients.tf`](./clients.tf) | talosconfig and kubeconfig: into Infisical, and the contexts on this Mac |
+| [`clients.tf`](./clients.tf) | talosconfig and kubeconfig: into Infisical, the kubeconfig also into core's project for its Headlamp, and the contexts on this Mac |
 | [`scripts/contexts.sh`](./scripts/contexts.sh) | adds or removes one cluster's contexts in `~/.talos/config` and `~/.kube/config` |
 | [`patches/`](./patches/) | Talos configuration documents for every node and for each role |
 | [`providers.tf`](./providers.tf) | providers, the Proxmox token from Infisical, and the state in R2 |

@@ -64,6 +64,11 @@ secrets:
     (SECRETS_YAML, what the cluster is made from; TALOSCONFIG and KUBECONFIG,
     written by Terraform - decisions/0010), /system/minio,
     /system/postgresql
+  written_to_core: >-
+    The admin kubeconfig again, into core's project at
+    /system/headlamp/LAB_KUBECONFIG, for core's Headlamp, which shows the
+    lab as admin@lab (01-infrastructure/clients.tf; the homelab repository's
+    decisions/0042).
 
 applications:                       # 03-gitops/apps/kustomization.yaml - decisions/0005
   running:
