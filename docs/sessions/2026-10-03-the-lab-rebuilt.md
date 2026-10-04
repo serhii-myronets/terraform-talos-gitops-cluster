@@ -53,8 +53,13 @@ into each app's kustomization.yaml as it is reviewed, which makes either easy.
 external-dns was the first moved: both its charts render from helmCharts in
 its kustomization.yaml, the same objects as before.
 
+cert-manager came next. Copying home-ca's key into the lab was weighed and
+refused; lab-ca, an intermediate limited to .home, was signed on the Mac and
+issues the Gateway's certificate, which the Mac trusted without a change
+(decisions/0006). The Gateway took core's listeners.
+
 Still open:
-- cert-manager next, and with it a .home listener on the Gateway - until then
-  the lab publishes no .home name.
+- argocd next: its route is argocd.home's first, and its anonymous admin is
+  the lab's weakest point now that it holds lab-ca.
 - The rest of the review, in apps/kustomization.yaml order.
 - An ApplicationSet once every application is reviewed.

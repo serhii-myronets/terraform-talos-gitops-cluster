@@ -32,9 +32,13 @@ bootstrap:                          # 02-bootstrap, Helmfile, context admin@lab
 network:
   gateway: main-gateway at 192.168.8.31   # Cilium LB pool 192.168.8.31-35, L2 from the workers
   listeners: >-
-    One, public: HTTP for *.serhii.link, what the tunnel carries. No .home
-    listener yet, so no .home name is published - it comes with
-    cert-manager and a certificate.
+    As core's: http for *.serhii.link, what the tunnel carries; http-home,
+    *.home on 80, redirecting to HTTPS; https, *.home on 443 with home-tls.
+  certificate: >-
+    home-tls in gateway-system, issued by cert-manager's ClusterIssuer lab-ca
+    - an intermediate under home-ca limited to .home, valid to 2031-10-03
+    (decisions/0006). Lists the lab's .home names; devices trust it through
+    home-ca.
   tunnel: lab (62ed916d-9072-479d-aa94-263edf64f262), two connectors
   external_dns:
     external-dns: serhii.link in Cloudflare, proxied CNAME to the tunnel, owner lab
@@ -46,7 +50,8 @@ secrets:
   store: ClusterSecretStore infisical-cloud
   keys: >-
     /system/cloudflare (TUNNEL_CREDENTIALS, DNS_API_TOKEN), /system/bind
-    (TSIG_KEY, TSIG_SECRET), /system/minio, /system/postgresql
+    (TSIG_KEY, TSIG_SECRET), /system/lab-ca (TLS_CRT, TLS_KEY, CA_CRT),
+    /system/minio, /system/postgresql
 
 applications:                       # 03-gitops/apps/kustomization.yaml - decisions/0005
   running:
@@ -54,8 +59,8 @@ applications:                       # 03-gitops/apps/kustomization.yaml - decisi
     - system/network/cloudflared
     - system/network/external-dns
     - system/security/external-secrets
+    - system/security/cert-manager       # v1.21.2
   waiting_for_review:
-    - system/security/cert-manager
     - system/storage/openebs
     - system/storage/minio
     - system/platform/argocd
