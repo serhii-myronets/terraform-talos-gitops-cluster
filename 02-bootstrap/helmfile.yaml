@@ -41,9 +41,9 @@ releases:
     values:
       - values/external-secrets-values.yaml
 
-  # Argo CD then manages itself from the same chart and values:
-  # 03-gitops/apps/system/platform/argocd, whose chart version moves with
-  # this one.
+  # Argo CD is upgraded here, as Cilium and External Secrets are - not by
+  # itself; 03-gitops/apps/system/platform/argocd holds only its route
+  # (docs/decisions/0003).
   - name: argocd
     namespace: argocd
     chart: argo/argo-cd

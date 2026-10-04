@@ -1,5 +1,5 @@
-# Read by the bootstrap release and by the Application through which Argo CD
-# manages itself (03-gitops/apps/system/platform/argocd).
+# Argo CD's only values: helmfile installs and upgrades it, and nothing in
+# 03-gitops manages it (docs/decisions/0003).
 
 # The chart installs and upgrades its own CRDs, and keeps them on uninstall.
 crds:

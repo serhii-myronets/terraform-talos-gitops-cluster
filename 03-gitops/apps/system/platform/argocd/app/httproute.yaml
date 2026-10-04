@@ -1,0 +1,17 @@
+# Argo CD's web interface. argocd.home on the LAN, with lab-ca's certificate,
+# published to the router's BIND; argocd.serhii.link through the lab's tunnel,
+# behind Cloudflare Access. Anonymous admin, no login - 02-bootstrap's values.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: argocd
+  namespace: argocd
+spec:
+  parentRefs:
+    - {name: main-gateway, namespace: gateway-system}
+  hostnames:
+    - argocd.home
+    - argocd.serhii.link
+  rules:
+    - backendRefs:
+        - {name: argocd-server, port: 80}

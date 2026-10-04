@@ -14,10 +14,11 @@ resources:
   # security
   - system/security/external-secrets/application.yaml
   - system/security/cert-manager/application.yaml
+  # platform
+  - system/platform/argocd/application.yaml
   # Not yet reviewed:
   # - system/storage/openebs/application.yaml
   # - system/storage/minio/application.yaml
-  # - system/platform/argocd/application.yaml
   # - system/platform/metrics-server/application.yaml
   # - system/platform/postgresql/application.yaml
   # - system/platform/strimzi/application.yaml

@@ -60,10 +60,10 @@ applications:                       # 03-gitops/apps/kustomization.yaml - decisi
     - system/network/external-dns
     - system/security/external-secrets
     - system/security/cert-manager       # v1.21.2
+    - system/platform/argocd             # its route only; Argo CD is 02-bootstrap's
   waiting_for_review:
     - system/storage/openebs
     - system/storage/minio
-    - system/platform/argocd
     - system/platform/metrics-server
     - system/platform/postgresql
     - system/platform/strimzi

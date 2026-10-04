@@ -15,7 +15,7 @@ Every command is pinned to the kubeconfig context `admin@lab`, hooks included, s
 1. **prepare hook** - `kubectl apply -k prepare-hook/ --server-side`: the Gateway API CRDs (v1.6.2, which Cilium 1.20 requires) and `initial-secret.yaml`, the Infisical credential External Secrets reads. Helmfile runs it before every command, `diff` and `lint` included; it is idempotent.
 2. **cilium** - CNI and kube-proxy replacement with BPF masquerading, Gateway API, L2 announcements, Hubble and Prometheus metrics. Its values follow core's; every container has a memory limit, so Talos's OOM controller never picks Cilium.
 3. **external-secrets** - the controller and its CRDs, before anything in 03-gitops asks for a secret; the `ClusterSecretStore` it serves is Argo CD's. Same values as core's.
-4. **argocd** - installs its own CRDs. Argo CD then manages itself from the same chart and values (`03-gitops/apps/system/platform/argocd`, whose chart version moves with this one).
+4. **argocd** - installs its own CRDs. Like Cilium and External Secrets it is upgraded here, not by itself; `03-gitops/apps/system/platform/argocd` holds only its route.
 5. **postsync hook of argocd** - `kubectl apply -f ../03-gitops/root.yaml`: the root Application, which runs every Application listed in `03-gitops/apps/kustomization.yaml`.
 
 ## Before the first run
