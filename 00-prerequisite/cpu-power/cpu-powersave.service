@@ -1,10 +1,12 @@
 [Unit]
-Description=Set CPU governor to powersave
+Description=Set CPU governor to powersave and EPP to balance_power
 After=multi-user.target
 
 [Service]
 Type=oneshot
 ExecStart=/usr/bin/cpupower frequency-set -g powersave
+# EPP is writable only under powersave, so it is set after the governor.
+ExecStart=/bin/sh -c 'for f in /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference; do echo balance_power > "$f"; done'
 
 [Install]
 WantedBy=multi-user.target
