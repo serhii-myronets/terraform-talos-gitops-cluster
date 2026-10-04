@@ -45,8 +45,9 @@ external:
     write:
       url: https://ingest.home/insert/native
       bearerTokenSecret: {name: ingest, key: token}
+      # VLAgent's newer schema names the same thing differently.
       tlsConfig:
-        ca: {secret: {name: ingest, key: ca.crt}}
+        caSecretKeyRef: {name: ingest, key: ca.crt}
 
 vmagent:
   spec:
@@ -56,11 +57,15 @@ vmagent:
       cluster: lab
     # While core is unreachable vmagent queues on this disk and sends the
     # backlog when it is back; without a volume the queue lives in the pod
-    # and dies with it.
-    storage:
-      storageClassName: proxmox-zfs
-      resources:
-        requests: {storage: 5Gi}
+    # and dies with it. Stateful mode makes it a StatefulSet, the volume a
+    # Proxmox disk that follows the pod between workers.
+    statefulMode: true
+    statefulStorage:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: proxmox-zfs
+          resources:
+            requests: {storage: 5Gi}
     resources:
       requests: {cpu: 50m, memory: 128Mi}
       limits: {memory: 384Mi}

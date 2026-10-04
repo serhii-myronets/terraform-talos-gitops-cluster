@@ -16,7 +16,7 @@ version, `victoria-metrics-k8s-stack` 0.95.0, with only what collects:
 | | role |
 |---|---|
 | the operator | turns VMAgent, VLAgent and the scrape objects into pods and configuration; reads ServiceMonitors too |
-| vmagent | scrapes every target the operator finds, labels it `cluster=lab`, writes to core; queues on a 5 Gi volume while core is away |
+| vmagent | scrapes every target the operator finds, labels it `cluster=lab`, writes to core; queues on a 5 Gi volume while core is away, as a StatefulSet |
 | vlagent | a DaemonSet reading every pod's log, field `cluster=lab`, writes to core |
 | kube-state-metrics | the Kubernetes objects' state as metrics |
 | node-exporter | each node's CPU, memory, disks and network |
