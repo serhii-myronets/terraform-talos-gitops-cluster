@@ -1,8 +1,10 @@
 # Working in this repository
 
-This repository builds the **lab**: Talos Kubernetes clusters as VMs on one
-Proxmox VE host, made to be destroyed and rebuilt. It is one part of a
-larger home setup whose source of truth is another repository:
+This repository builds the **lab**: a Talos Kubernetes cluster as VMs on one
+Proxmox VE host - the owner's production-like setup, for the owner's own
+services and for learning, built so that the cluster can be destroyed and
+rebuilt while its data lives on. It is one part of a larger home setup whose
+source of truth is another repository:
 
 **[serhii-myronets/homelab](https://github.com/serhii-myronets/homelab)**,
 cloned locally at `~/homelab`.
@@ -21,8 +23,6 @@ Before changing anything, read in `~/homelab`:
   this one, is where facts about the host are recorded; update it there,
   in that repository's style, when they change.
 - `docs/network.yaml` - addresses, the DHCP pool, what is free.
-- `docs/decisions/0034-satellite-joins-core.md` - why the lab exists: a
-  place to rehearse what core will go through.
 - `docs/traps.yaml` - Talos, Cilium and storage failures already met on
   core; most apply here as well.
 

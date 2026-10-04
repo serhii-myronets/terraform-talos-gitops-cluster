@@ -65,6 +65,16 @@ argocd.home in BIND as owner lab, answered over HTTPS with lab-ca's
 certificate and trusted as it was; argocd.serhii.link in Cloudflare, behind
 Access's login.
 
+metrics-server followed, then storage, where the owner set the lab's purpose
+straight: not core's rehearsal but a production-like setup for the owner's
+own services and for learning. OpenEBS hostpath went to the archive - at the
+repository's root now, with the old screenshots - and Proxmox CSI took its
+place (decisions/0007): volumes as zvols of the host, attached to whichever
+worker runs the pod. The workers lost their data disks, in two steps so that
+none was pulled while mounted, and every node got its topology labels. A
+test claim moved from worker-1 to worker-2 with its file, and Terraform's
+plan stayed clean with the disk attached.
+
 Still open:
 - The rest of the review, in apps/kustomization.yaml order.
 - An ApplicationSet once every application is reviewed.

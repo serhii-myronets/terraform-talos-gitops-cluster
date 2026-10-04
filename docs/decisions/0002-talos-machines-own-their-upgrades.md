@@ -17,8 +17,8 @@ applied with `-parallelism=1`, one node at a time.
 
 Rejected: `talos_machine_configuration_apply` and `talos_machine_bootstrap`,
 what core uses. They apply configuration and nothing more; upgrades stay a
-`talosctl` procedure by hand. Rehearsing the newer resources here is how core
-would learn whether to move to them.
+`talosctl` procedure by hand, and Terraform's plan would not show a version
+out of step.
 
 With provider 0.12 the configuration is generated against Talos's v1.14
 contract, where each part is a document of its own and the old v1alpha1 keys

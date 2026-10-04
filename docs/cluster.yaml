@@ -17,10 +17,9 @@ cluster:
     - {name: controlplane-1, ip: 192.168.8.40, vm: 140, cpu: 4, memory_gb: 4}
     - {name: controlplane-2, ip: 192.168.8.41, vm: 141, cpu: 4, memory_gb: 4}
     - {name: controlplane-3, ip: 192.168.8.42, vm: 142, cpu: 4, memory_gb: 4}
-    - {name: worker-1, ip: 192.168.8.45, vm: 145, cpu: 8, memory_gb: 18,
-       storage: /var/mnt/storage, 100 GB}
-    - {name: worker-2, ip: 192.168.8.46, vm: 146, cpu: 8, memory_gb: 18,
-       storage: /var/mnt/storage, 100 GB}
+    - {name: worker-1, ip: 192.168.8.45, vm: 145, cpu: 8, memory_gb: 18}
+    - {name: worker-2, ip: 192.168.8.46, vm: 146, cpu: 8, memory_gb: 18}
+  topology: every node labelled region proxmox, zone proxmox - Proxmox CSI places volumes by them
 
 bootstrap:                          # 02-bootstrap, Helmfile, context admin@lab
   cilium: 1.20.2                    # kube-proxy replacement, BPF masquerade, Gateway API
@@ -44,6 +43,14 @@ network:
     external-dns: serhii.link in Cloudflare, proxied CNAME to the tunnel, owner lab
     external-dns-bind: .home in the router's BIND over RFC 2136, key lab, owner lab
 
+storage:
+  driver: Proxmox CSI, chart 0.5.12 - decisions/0007
+  classes: >-
+    proxmox-zfs (default, Delete) and proxmox-zfs-retain (Retain), both on
+    local-zfs, XFS. A volume is a zvol vm-9999-pvc-<uuid> attached to the
+    worker that runs its pod.
+  proxmox_user: kubernetes-csi@pve, token csi, role CSI (VM.Audit, VM.Config.Disk, Datastore.*)
+
 secrets:
   infisical_project: proxmox-lab, environment prod
   identity: lab, read-only on proxmox-lab - decisions/0004
@@ -51,7 +58,8 @@ secrets:
   keys: >-
     /system/cloudflare (TUNNEL_CREDENTIALS, DNS_API_TOKEN), /system/bind
     (TSIG_KEY, TSIG_SECRET), /system/lab-ca (TLS_CRT, TLS_KEY, CA_CRT),
-    /system/minio, /system/postgresql
+    /system/proxmox-csi (TOKEN_ID, TOKEN_SECRET), /system/minio,
+    /system/postgresql
 
 applications:                       # 03-gitops/apps/kustomization.yaml - decisions/0005
   running:
@@ -60,6 +68,7 @@ applications:                       # 03-gitops/apps/kustomization.yaml - decisi
     - system/network/external-dns
     - system/security/external-secrets
     - system/security/cert-manager       # v1.21.2
+    - system/storage/proxmox-csi         # chart 0.5.12
     - system/platform/argocd             # its route only; Argo CD is 02-bootstrap's
     - system/platform/metrics-server     # chart 3.14.0
   waiting_for_review:

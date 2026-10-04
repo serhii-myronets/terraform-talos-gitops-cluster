@@ -2,9 +2,9 @@
 # question - every fact lives in exactly one place, here or in the homelab
 # repository (~/homelab, github.com/serhii-myronets/homelab).
 #
-# The lab is a Talos cluster of VMs on the Proxmox host, made to be destroyed
-# and rebuilt: a place to rehearse what core will go through
-# (homelab: docs/decisions/0034).
+# The lab is a Talos cluster of VMs on the Proxmox host: the owner's
+# production-like setup, for the owner's own services and for learning. The cluster
+# can be destroyed and rebuilt; volumes live on the host (decisions/0007).
 #
 #   01-infrastructure   Terraform: the VMs, Talos, etcd's bootstrap
 #   02-bootstrap        Helmfile: Cilium, External Secrets, Argo CD, the root

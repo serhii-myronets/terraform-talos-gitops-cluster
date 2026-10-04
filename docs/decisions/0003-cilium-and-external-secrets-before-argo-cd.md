@@ -23,7 +23,7 @@ The network and the secrets are what Argo CD itself stands on. Upgraded
 through Git, a bad Cilium value with automatic sync would take the cluster's
 network down and Argo CD's way of fixing it with it; External Secrets has to
 run before any application asks for a secret. Their upgrades are a
-`helmfile apply`, as on core - which is also the procedure the lab rehearses.
+`helmfile apply`, as on core.
 
 Rejected: Helmfile installing them once and Argo CD adopting the releases -
 itself included - as many home clusters do, and as the lab did before.
