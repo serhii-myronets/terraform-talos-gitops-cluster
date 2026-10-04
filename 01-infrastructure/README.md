@@ -12,6 +12,7 @@ Terraform that builds the lab's Talos cluster on the Proxmox host: the VMs, each
 | [`patches/`](./patches/) | Talos configuration documents for every node and for each role |
 | [`providers.tf`](./providers.tf) | providers, and the state in R2 |
 | [`variables.tf`](./variables.tf) | the Proxmox API token, the one input not in Git |
+| [`.envrc`](./.envrc) | the Infisical CLI session's token, into the environment |
 
 ## The cluster
 
@@ -37,6 +38,24 @@ The patches use the v1.14 configuration contract, where each part of the configu
   ```hcl
   proxmox_api_token = "root@pam!terraform=<secret>"
   ```
+- An Infisical CLI session, `infisical login`, and direnv to hand it to Terraform (below).
+
+## Infisical
+
+Terraform reads and writes Infisical as the owner, with the token of the CLI's own session ([decisions/0009](../docs/decisions/0009-terraform-logs-in-to-infisical-as-the-owner.md)): `infisical login` opens it for ten days, and [`.envrc`](./.envrc) exports it whenever a shell enters this directory. When it has run out, `infisical login` again.
+
+Once:
+
+```bash
+brew install direnv   # then add: eval "$(direnv hook zsh)"  to ~/.zshrc
+direnv allow          # in this directory, again after each change to .envrc
+```
+
+Without direnv, the same by hand before a plan:
+
+```bash
+export INFISICAL_AUTH_METHOD=token INFISICAL_TOKEN=$(infisical user get token --plain)
+```
 
 ## Run
 

@@ -27,6 +27,10 @@ terraform {
       source  = "siderolabs/talos"
       version = "0.12.0"
     }
+    infisical = {
+      source  = "infisical/infisical"
+      version = "0.19.38"
+    }
   }
 }
 
@@ -35,3 +39,8 @@ provider "proxmox" {
   api_token = var.proxmox_api_token
   insecure  = true # the host's self-signed certificate
 }
+
+# Infisical as the owner: the token of the CLI session `infisical login`
+# opened, which .envrc beside this file exports - nothing here or in a tfvars
+# file. See docs/decisions/0009.
+provider "infisical" {}
