@@ -73,7 +73,11 @@ vmagent:
 vlagent:
   enabled: true
   spec:
-    # Every pod's log, from every node: a DaemonSet.
+    # Every pod's log, from every node: a DaemonSet, tolerating the control
+    # planes' taint too - Cilium, the CSI controller and Argo CD's own
+    # components log there.
+    tolerations:
+      - {key: node-role.kubernetes.io/control-plane, operator: Exists, effect: NoSchedule}
     k8sCollector:
       enabled: true
       # Logs have no external labels; this field is their cluster label.
