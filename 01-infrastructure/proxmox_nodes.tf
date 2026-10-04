@@ -1,139 +1,97 @@
-// ==============================================================================
-// Talos Proxmox Image Download
-// ==============================================================================
-
-resource "proxmox_virtual_environment_download_file" "talos_nocloud_image" {
-  content_type            = "iso"
-  datastore_id            = "local"
-  node_name               = var.proxmox_node_name
-  file_name               = "talos-${var.talos_version}.img"
-  url                     = replace(data.talos_image_factory_urls.this.urls.disk_image, ".xz", ".gz")
-  decompression_algorithm = "gz"
-  overwrite               = true
-  overwrite_unmanaged     = true
+# The Talos image, built by the Image Factory with the extensions in
+# talos_configs.tf, as qcow2: an uncompressed image of content type import is
+# imported through the API, so the provider needs no ssh to the host.
+resource "proxmox_download_file" "talos" {
+  node_name    = local.proxmox.node
+  datastore_id = local.proxmox.images
+  content_type = "import"
+  file_name    = "talos-${local.talos_version}-${substr(talos_image_factory_schematic.this.id, 0, 8)}-nocloud-amd64.qcow2"
+  url          = data.talos_image_factory_urls.this.urls.disk_image
 }
 
-// ==============================================================================
-// Talos Control Plane Virtual Machines
-// ==============================================================================
+resource "proxmox_virtual_environment_vm" "node" {
+  for_each = local.nodes
 
-resource "proxmox_virtual_environment_vm" "control_plane" {
-  count           = var.controller_config.count
-  vm_id           = count.index + 100
-  name            = "${var.prefix}-${local.controller_nodes[count.index].name}"
-  tags            = sort(["talos", "control_plane", "terraform"])
+  name      = each.key
+  node_name = local.proxmox.node
+  vm_id     = each.value.vm_id
+  tags      = ["lab", "talos", each.value.role]
+  on_boot   = true
+
+  # The lab is disposable: destroy stops the VM rather than waiting on a
+  # guest shutdown.
   stop_on_destroy = true
-  node_name       = var.proxmox_node_name
-  on_boot         = true
-
-  scsi_hardware = "virtio-scsi-single"
-
-  cpu {
-    cores = var.controller_config.cpu
-    type  = "x86-64-v2-AES"
-  }
-
-  memory {
-    dedicated = var.controller_config.memory
-  }
-
   agent {
     enabled = true
   }
 
+  machine       = "q35"
+  scsi_hardware = "virtio-scsi-single"
+
+  # One host and no migration, so the guest sees the real CPU.
+  cpu {
+    cores = local.sizes[each.value.role].cpu
+    type  = "host"
+  }
+
+  # Fixed, no ballooning: the host's memory is planned in locals.tf.
+  memory {
+    dedicated = local.sizes[each.value.role].memory
+    floating  = 0
+  }
+
   network_device {
-    bridge = var.proxmox_network_bridge
+    bridge = local.proxmox.bridge
   }
 
   disk {
-    datastore_id = var.controller_config.os_disk.datastore
-    file_id      = proxmox_virtual_environment_download_file.talos_nocloud_image.id
-    file_format  = "raw"
     interface    = "scsi0"
-    size         = var.controller_config.os_disk.size
+    datastore_id = local.proxmox.datastore
+    import_from  = proxmox_download_file.talos.id
+    size         = local.sizes[each.value.role].disk
     iothread     = true
-    ssd          = true
     discard      = "on"
+    ssd          = true
   }
+
+  # The workers' second disk, Talos's user volume `storage` for OpenEBS
+  # hostpath (patches/worker.yaml).
+  dynamic "disk" {
+    for_each = local.sizes[each.value.role].data_disk > 0 ? [local.sizes[each.value.role].data_disk] : []
+    content {
+      interface    = "scsi1"
+      datastore_id = local.proxmox.datastore
+      size         = disk.value
+      iothread     = true
+      discard      = "on"
+      ssd          = true
+    }
+  }
+
+  boot_order = ["scsi0"]
 
   operating_system {
     type = "l26"
   }
 
+  # The node's address, gateway and resolver reach Talos through the nocloud
+  # datasource: the one place they are set.
   initialization {
+    datastore_id = local.proxmox.datastore
+    dns {
+      servers = local.cluster.dns
+    }
     ip_config {
       ipv4 {
-        address = "${local.controller_nodes[count.index].address}/24"
-        gateway = var.cluster_node_network_gateway
+        address = "${each.value.ip}/${local.cluster.prefix}"
+        gateway = local.cluster.gateway
       }
     }
   }
-}
 
-// ==============================================================================
-// Talos Worker Virtual Machines
-// ==============================================================================
-
-resource "proxmox_virtual_environment_vm" "talos_worker_01" {
-  depends_on = [proxmox_virtual_environment_vm.control_plane]
-  count      = var.worker_config.count
-  name       = "${var.prefix}-${local.worker_nodes[count.index].name}"
-  tags       = sort(["talos", "worker", "terraform"])
-  node_name  = var.proxmox_node_name
-  on_boot    = true
-
-  scsi_hardware = "virtio-scsi-single"
-
-  cpu {
-    cores = var.worker_config.cpu
-    type  = "x86-64-v2-AES"
-  }
-
-  memory {
-    dedicated = var.worker_config.memory
-  }
-
-  agent {
-    enabled = true
-  }
-
-  network_device {
-    bridge = var.proxmox_network_bridge
-  }
-
-  # OS disk (bootable Talos image)
-  disk {
-    datastore_id = var.worker_config.os_disk.datastore
-    interface    = "scsi0"
-    file_id      = proxmox_virtual_environment_download_file.talos_nocloud_image.id
-    file_format  = "raw"
-    size         = var.worker_config.os_disk.size
-    iothread     = true
-    ssd          = true
-    discard      = "on"
-  }
-  #
-  # Data disk for OpenEBS LocalPV
-  disk {
-    datastore_id = var.worker_config.open_ebs_disk.datastore
-    interface    = "scsi1"
-    file_format  = "raw"
-    size         = var.worker_config.open_ebs_disk.size
-    ssd          = true
-    discard      = "on"
-    iothread     = true
-  }
-
-  operating_system {
-    type = "l26"
-  }
-
-  initialization {
-    ip_config {
-      ipv4 {
-        address = "${local.worker_nodes[count.index].address}/24"
-        gateway = var.cluster_node_network_gateway
-      }
-    }
+  # The image is fixed at creation; upgrades go through talos_machine, not a
+  # new disk.
+  lifecycle {
+    ignore_changes = [disk[0].import_from]
   }
 }

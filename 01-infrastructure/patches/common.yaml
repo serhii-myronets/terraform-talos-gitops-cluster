@@ -1,0 +1,27 @@
+# Written against the v1.14 configuration contract, where each part of the
+# configuration is a document of its own; the old v1alpha1 keys for the same
+# settings (cluster.network.cni, cluster.proxy, ...) are refused beside them.
+
+# Cilium is the CNI, installed by 02-bootstrap; it also replaces kube-proxy
+# (patches/controlplane.yaml).
+apiVersion: v1alpha1
+kind: KubeFlannelCNIConfig
+$patch: delete
+---
+# The VM's one network card, by driver rather than by the name the kernel
+# gives it, so the VIP and anything else can name it.
+apiVersion: v1alpha1
+kind: LinkAliasConfig
+name: lan
+selector:
+  match: link.driver == "virtio_net"
+---
+# Talos's own logs, to the OpenTelemetry collector on each node.
+machine:
+  logging:
+    destinations:
+      - endpoint: tcp://127.0.0.1:12345/
+        format: json_lines
+        extraTags:
+          service_name: logs
+          service_namespace: talos

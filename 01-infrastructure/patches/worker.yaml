@@ -1,0 +1,11 @@
+# The second disk, whole, at /var/mnt/storage: OpenEBS hostpath's basePath.
+apiVersion: v1alpha1
+kind: UserVolumeConfig
+name: storage
+provisioning:
+  diskSelector:
+    match: "!system_disk"
+  minSize: 10GiB
+  grow: true
+filesystem:
+  type: xfs

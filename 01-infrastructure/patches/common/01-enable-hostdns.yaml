@@ -1,6 +1,0 @@
-# This file is used to enable host DNS in Talos.
-machine:
-  features:
-    hostDNS:
-      enabled: true
-      forwardKubeDNSToHost: true

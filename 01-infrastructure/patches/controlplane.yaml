@@ -1,0 +1,28 @@
+# Cilium replaces kube-proxy. A control-plane document: Talos refuses it on a
+# worker.
+apiVersion: v1alpha1
+kind: KubeProxyConfig
+enabled: false
+---
+# Memory limits, well above use, only so that Talos's OOM controller never
+# picks the control plane: it spares any pod whose every container has a
+# limit. On core it killed kube-apiserver for want of one - see
+# talos-oom-controller-kills-pods-without-a-memory-limit in the homelab
+# repository's docs/traps.yaml. Requests are Talos's defaults.
+apiVersion: v1alpha1
+kind: KubeAPIServerConfig
+resources:
+  requests: {cpu: 200m, memory: 512Mi}
+  limits: {memory: 2560Mi}
+---
+apiVersion: v1alpha1
+kind: KubeControllerManagerConfig
+resources:
+  requests: {cpu: 50m, memory: 256Mi}
+  limits: {memory: 512Mi}
+---
+apiVersion: v1alpha1
+kind: KubeSchedulerConfig
+resources:
+  requests: {cpu: 10m, memory: 64Mi}
+  limits: {memory: 256Mi}

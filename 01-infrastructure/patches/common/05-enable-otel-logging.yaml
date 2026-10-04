@@ -1,8 +1,0 @@
-machine:
-  logging:
-    destinations:
-      - endpoint: "tcp://127.0.0.1:12345/"
-        format: "json_lines"
-        extraTags:
-          service_name: logs
-          service_namespace: talos

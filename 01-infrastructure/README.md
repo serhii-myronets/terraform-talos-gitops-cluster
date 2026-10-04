@@ -1,118 +1,63 @@
 # 01-infrastructure
 
-This stage provisions the base infrastructure for the Kubernetes cluster using Talos Linux and Terraform on a Proxmox VE host.
+Terraform that builds the lab's Talos cluster on the Proxmox host: the VMs, each node's Talos configuration, etcd's bootstrap and the client configurations. Cilium and Argo CD follow in [02-bootstrap](../02-bootstrap/README.md).
 
-It creates control plane and worker node virtual machines, injects machine configurations, and applies environment-specific patches to customize Talos behavior.
+## Layout
 
-## Purpose
+| File | |
+|---|---|
+| [`locals.tf`](./locals.tf) | everything that is set: Proxmox, the network, versions, VM sizes, the nodes |
+| [`proxmox_nodes.tf`](./proxmox_nodes.tf) | the Talos image and the VMs |
+| [`talos_configs.tf`](./talos_configs.tf) | the image schematic, machine configurations, `talos_machine` and `talos_cluster` |
+| [`patches/`](./patches/) | Talos configuration documents for every node and for each role |
+| [`providers.tf`](./providers.tf) | providers, and the state in R2 |
+| [`variables.tf`](./variables.tf) | the Proxmox API token, the one input not in Git |
 
-Supports single-node and HA configurations depending on variable overrides.
+## The cluster
 
-* Provision VMs on Proxmox with static IPs
-* Generate and inject Talos machine configurations
-* Apply Talos patches for control plane, workers, and Cilium mode
-* Output all required data for the bootstrap phase
+| | Address | vCPU | RAM | Disks |
+|---|---|---|---|---|
+| Kubernetes API (VIP) | 192.168.8.50 | | | |
+| `lab-controlplane-1..3` | .40-.42 | 4 | 4 GB | 20 GB |
+| `lab-worker-1..2` | .45-.46 | 8 | 18 GB | 40 GB + 100 GB at `/var/mnt/storage` |
 
-## Directory Structure
+Talos v1.14.1 and Kubernetes v1.37.0, the versions core runs. The VMs' disks are on `local-zfs`, imported from the Image Factory's qcow2 image with the `qemu-guest-agent` extension. Each node's address, gateway and resolver come from Proxmox's cloud-init drive.
 
-* `providers.tf` – defines Terraform providers
-* `proxmox_nodes.tf` – VM resource definitions
-* `talos_configs.tf` – generation and injection of Talos machine configs
-* `variables.tf` – input variables
-* `terraform.tfvars` – example configuration
-* `outputs.tf` – exposed outputs (e.g., IPs, config paths)
-* `patches/` – Talos machine config patches grouped by role or function
+The patches use the v1.14 configuration contract, where each part of the configuration is a document of its own: Flannel is removed and kube-proxy disabled for Cilium, the network card is aliased `lan` for the VIP, the control-plane components carry memory limits, and each worker's second disk is the user volume `storage`.
 
-## Usage
+## Before the first run
 
-Before you begin, add your Proxmox connection details to `terraform.tfvars`.
+- The `r2` profile in `~/.aws/credentials`, as core uses: see `core/01-talos/README.md` in the homelab repository.
+- `proxmox.auto.tfvars`, ignored by Git, with a token from the Proxmox host:
 
-Example:
+  ```bash
+  pveum user token add root@pam terraform --privsep 0
+  ```
 
-```hcl
-proxmox_endpoint = "https://10.1.1.100:8006/"
-proxmox_username = "root@pam"
-proxmox_password = "your-password"
-proxmox_node_name = "proxmox"
-```
+  ```hcl
+  proxmox_api_token = "root@pam!terraform=<secret>"
+  ```
 
-Additional cluster settings (e.g., Talos version, VM resources, IPs) are defined in [`variables.tf`](./variables.tf) and can be overridden if needed.
-
-### Network topology
-
-The default configuration uses the `10.1.1.0/24` subnet:
-
-| Role | IP range |
-|------|----------|
-| Cluster VIP | `10.1.1.50` |
-| Control plane nodes | `10.1.1.60`, `10.1.1.61`, … |
-| Worker nodes | `10.1.1.70`, `10.1.1.71`, … |
-
-The default topology is **1 control plane node + 3 worker nodes**.
-
-### Worker node disks
-
-Each worker node is provisioned with a second disk (`open_ebs_disk`, 100 GB) dedicated to OpenEBS storage. This disk is mounted and managed by the `00-mount-open-ebs-disk` Talos patch applied to all worker nodes.
-
-### Talos patches
-
-The following patches are applied during provisioning:
-
-| Scope | Patch |
-|-------|-------|
-| common | `00-enable-kubeprism` |
-| common | `01-enable-hostdns` |
-| common | `02-enable-cluster-discovery` |
-| common | `03-disable-network-cni` |
-| common | `04-disable-kubeproxy` |
-| common | `05-enable-otel-logging` |
-| worker | `00-mount-open-ebs-disk` |
-| controller | `00-set-network-vip` |
+## Run
 
 ```bash
 terraform init
-terraform apply
+terraform plan -out=lab.plan
+terraform apply lab.plan
 
-# Save kubeconfig locally to access the cluster
-terraform output -raw kubeconfig > ~/.kube/config
-
-# Save talosconfig locally to manage the cluster with talosctl
-terraform output -raw talosconfig > ~/.talos/config
+# Add the lab beside core's contexts rather than over them: merge the Talos
+# configuration, then let talosctl merge the kubeconfig.
+f=$(mktemp) && terraform output -raw talosconfig > "$f" && talosctl config merge "$f"; rm -f "$f"
+talosctl --context lab -n 192.168.8.40 kubeconfig
 ```
 
-Terraform will provision the VMs, generate Talos configurations, and return the required outputs for the next deployment stage. Wait until all nodes become `Ready` before proceeding. You can verify this using:
+The Talos context is `lab` and the Kubernetes context `admin@lab`; `talosctl config merge` makes `lab` the current Talos context, `talosctl config context <name>` switches back. Nodes stay `NotReady` until Cilium is installed in 02-bootstrap.
 
-```bash
-kubectl get nodes
-```
+## Upgrades
 
-Expected output:
-
-```
-NAME                      STATUS   ROLES           AGE     VERSION
-talos-controlplane-01     Ready    control-plane   3m24s   v1.34.2
-talos-worker-01           Ready    <none>          3m08s   v1.34.2
-talos-worker-02           Ready    <none>          3m05s   v1.34.2
-talos-worker-03           Ready    <none>          3m02s   v1.34.2
-```
-
-## Verification
-
-Once the cluster is up, you can visually confirm successful provisioning:
-
-### Proxmox VM view
-
-This screenshot shows Talos VMs created in the Proxmox Virtual Environment, including control plane and worker nodes with their assigned IPs and resource allocations.
-
-> ⚠️ The screenshot shows a 5-node cluster. The default configuration provisions 4 nodes (1 controlplane + 3 workers).
-
-<img src="../assets/proxmox.png" width="1100"/>
-
-### Talos Cluster Status
-
-Cluster node status as seen via `k9s`, a terminal-based UI for managing Kubernetes clusters. Make sure `k9s` is installed locally to use this view.
-
-<img src="../assets/k9s.png" width="1100"/>
+- **Talos**: change `talos_version` in `locals.tf`. Each `talos_machine` cordons, drains, upgrades and uncordons its node. Apply with `-parallelism=1`, so one node reboots at a time and etcd keeps its quorum.
+- **Kubernetes**: change `kubernetes_version`. `talos_cluster` runs Talos's `upgrade-k8s`, component by component.
+- **`talos_contract`** stays at the version the cluster was created with; moving it regenerates every configuration against a newer schema, and is its own change.
 
 ## Navigation
 

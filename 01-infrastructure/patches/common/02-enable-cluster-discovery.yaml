@@ -1,9 +1,0 @@
-# This patch enables cluster discovery for Talos.
-cluster:
-  discovery:
-    enabled: true
-    registries:
-      kubernetes:
-        disabled: false
-      service:
-        disabled: true

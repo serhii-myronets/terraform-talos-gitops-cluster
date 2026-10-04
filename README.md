@@ -11,8 +11,8 @@ The repository is split into three deployment stages:
 
 ## What is deployed
 
-- Talos Linux VMs provisioned on Proxmox with Terraform
-- 1 control-plane node and 3 worker nodes by default
+- Talos Linux VMs provisioned on Proxmox with Terraform, Talos upgrades and Kubernetes upgrades included
+- 3 control-plane nodes and 2 workers
 - Cilium as the CNI, with kube-proxy replacement, eBPF, Hubble and Gateway API
 - Argo CD managing the rest of the cluster from the `homelab` branch
 - OpenEBS for worker-node storage
@@ -27,19 +27,17 @@ This is a homelab/learning environment. Resource sizes, credentials, network add
 
 ## Architecture
 
-The default Terraform values use one Proxmox host and the `10.1.1.0/24` node network:
+One Proxmox host on the home LAN, `192.168.8.0/24`:
 
 ```text
-Proxmox VE
+Proxmox VE (192.168.8.30)
 └── vmbr0
-    ├── control-plane: 10.1.1.60
-    ├── worker-1:      10.1.1.70
-    ├── worker-2:      10.1.1.71
-    ├── worker-3:      10.1.1.72
-    └── Kubernetes API VIP: 10.1.1.50
+    ├── lab-controlplane-1..3: 192.168.8.40-42
+    ├── lab-worker-1..2:       192.168.8.45-46
+    └── Kubernetes API VIP:    192.168.8.50
 ```
 
-The exact node count, addresses and VM resources are controlled by [`01-infrastructure/variables.tf`](./01-infrastructure/variables.tf). The default worker profile includes a separate 100 GB disk for OpenEBS.
+Nodes, addresses, versions and VM sizes are set in [`01-infrastructure/locals.tf`](./01-infrastructure/locals.tf). Each worker has a second 100 GB disk for OpenEBS.
 
 ## Repository layout
 
@@ -75,8 +73,9 @@ Follow the stage-specific README files in order:
 # Run from 01-infrastructure
 terraform init
 terraform apply
-terraform output -raw kubeconfig > ~/.kube/config
-terraform output -raw talosconfig > ~/.talos/config
+# Merged beside existing contexts - see 01-infrastructure/README.md
+f=$(mktemp) && terraform output -raw talosconfig > "$f" && talosctl config merge "$f"; rm -f "$f"
+talosctl --context lab -n 192.168.8.40 kubeconfig
 
 # Then bootstrap
 cd ../02-bootstrap

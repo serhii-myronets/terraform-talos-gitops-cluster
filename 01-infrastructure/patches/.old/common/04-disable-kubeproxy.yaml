@@ -1,4 +1,0 @@
-# This file is used to disable kube-proxy on Talos.
-cluster:
-  proxy:
-    disabled: true

@@ -1,6 +1,0 @@
-# This file is used to enable kubePrism on Talos Linux.
-machine:
-  features:
-    kubePrism:
-      enabled: true
-      port: 7445

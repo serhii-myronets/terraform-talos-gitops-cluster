@@ -1,6 +1,0 @@
-cluster:
-  apiServer:
-    extraArgs:
-      service-account-issuer: "https://cluster.serhii.link"
-      service-account-jwks-uri: "https://cluster.serhii.link/openid/v1/jwks"
-      anonymous-auth: "true"

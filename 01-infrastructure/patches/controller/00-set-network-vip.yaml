@@ -1,7 +1,0 @@
-# This file is used to set the network VIP for the Talos controller nodes.
-machine:
-  network:
-    interfaces:
-      - interface: eth0
-        vip:
-          ip: ${cluster_vip}

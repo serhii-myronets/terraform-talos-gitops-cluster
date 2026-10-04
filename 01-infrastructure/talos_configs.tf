@@ -1,97 +1,123 @@
-data "talos_image_factory_urls" "this" {
-  talos_version = var.talos_version
-  schematic_id  = talos_image_factory_schematic.this.id
-  platform      = "nocloud"
-}
-
 resource "talos_image_factory_schematic" "this" {
-  schematic = yamlencode(
-    {
-      customization = {
-        systemExtensions = {
-          officialExtensions = [
-            "siderolabs/qemu-guest-agent",
-            "siderolabs/intel-ucode"
-          ]
-        }
+  schematic = yamlencode({
+    customization = {
+      systemExtensions = {
+        officialExtensions = ["siderolabs/qemu-guest-agent"]
       }
     }
+  })
+}
+
+data "talos_image_factory_urls" "this" {
+  talos_version     = local.talos_version
+  schematic_id      = talos_image_factory_schematic.this.id
+  platform          = "nocloud"
+  disk_image_format = "qcow2"
+}
+
+resource "talos_machine_secrets" "this" {}
+
+data "talos_client_configuration" "this" {
+  cluster_name         = local.cluster.name
+  client_configuration = talos_machine_secrets.this.client_configuration
+  endpoints            = [for node in local.controlplanes : node.ip]
+  nodes                = [for node in local.nodes : node.ip]
+}
+
+# Each node's configuration: the patches for every node and for its role, then
+# what is its own.
+data "talos_machine_configuration" "node" {
+  for_each = local.nodes
+
+  cluster_name       = local.cluster.name
+  cluster_endpoint   = local.cluster.endpoint
+  machine_type       = each.value.role
+  machine_secrets    = talos_machine_secrets.this.machine_secrets
+  talos_version      = local.talos_contract
+  kubernetes_version = local.kubernetes_version
+
+  config_patches = concat(
+    [
+      file("${path.module}/patches/common.yaml"),
+      file("${path.module}/patches/${each.value.role}.yaml"),
+      yamlencode({
+        apiVersion = "v1alpha1"
+        kind       = "HostnameConfig"
+        auto       = "off"
+        hostname   = each.key
+      }),
+      # What `talosctl upgrade` and a reinstall default to; talos_machine
+      # upgrades to the same image.
+      yamlencode({
+        apiVersion = "v1alpha1"
+        kind       = "UnattendedInstallConfig"
+        installer  = { image = data.talos_image_factory_urls.this.urls.installer }
+        # The patch must name the disk again. scsi0, the system disk, is
+        # always sda: the VMs have SCSI disks only.
+        provisioning = { diskSelector = { match = "disk.dev_path == \"/dev/sda\"" } }
+      }),
+    ],
+    each.value.role == "controlplane" ? [
+      yamlencode({
+        apiVersion = "v1alpha1"
+        kind       = "Layer2VIPConfig"
+        name       = local.cluster.vip
+        link       = "lan" # the alias in patches/common.yaml
+      }),
+    ] : [],
   )
 }
 
-// ==============================================================================
-// Talos Machine Secrets and Client Configuration
-// ==============================================================================
-
-resource "talos_machine_secrets" "machine_secrets" {}
-
-data "talos_client_configuration" "talosconfig" {
-  cluster_name         = var.cluster_name
-  client_configuration = talos_machine_secrets.machine_secrets.client_configuration
-  endpoints            = [for node in local.controller_nodes : node.address]
+# Only to drain a node before an upgrade reboots it. Generated from the
+# secrets, so it needs no running cluster and is never stored.
+ephemeral "talos_cluster_kubeconfig" "drain" {
+  cluster_name    = local.cluster.name
+  endpoint        = local.cluster.endpoint
+  machine_secrets = talos_machine_secrets.this.machine_secrets
 }
 
-// ==============================================================================
-// Talos Cluster Kubeconfig
-// ==============================================================================
+# A node's configuration, and its Talos version: a changed installer image
+# upgrades it in place, cordoned and drained first. Kubernetes versions belong
+# to talos_cluster. Run an upgrade with -parallelism=1, so one node at a time
+# reboots and etcd keeps its quorum.
+resource "talos_machine" "controlplane" {
+  for_each   = local.controlplanes
+  depends_on = [proxmox_virtual_environment_vm.node]
 
-resource "talos_cluster_kubeconfig" "kubeconfig" {
-  depends_on           = [talos_machine_bootstrap.bootstrap]
-  client_configuration = talos_machine_secrets.machine_secrets.client_configuration
-  node                 = local.controller_nodes[0].address
+  node                            = each.value.ip
+  client_configuration            = talos_machine_secrets.this.client_configuration
+  machine_configuration           = data.talos_machine_configuration.node[each.key].machine_configuration
+  image                           = data.talos_image_factory_urls.this.urls.installer
+  kubeconfig_wo                   = ephemeral.talos_cluster_kubeconfig.drain.kubeconfig_raw
+  ignore_kubernetes_upgrade_drift = true
 }
 
-// ==============================================================================
-// Talos Controlplane Node Configuration
-// ==============================================================================
+# Bootstraps etcd on the first control plane and owns the Kubernetes version:
+# a change runs Talos's upgrade-k8s, component by component.
+resource "talos_cluster" "this" {
+  depends_on = [talos_machine.controlplane]
 
-data "talos_machine_configuration" "controller" {
-  cluster_name       = var.cluster_name
-  cluster_endpoint   = local.cluster_endpoint
-  kubernetes_version = var.kubernetes_version
-  machine_type       = "controlplane"
-  machine_secrets    = talos_machine_secrets.machine_secrets.machine_secrets
-  config_patches     = local.config_patches_controller
+  node                 = local.first_controlplane
+  control_plane_nodes  = [for node in local.controlplanes : node.ip]
+  client_configuration = talos_machine_secrets.this.client_configuration
+  kubernetes_version   = local.kubernetes_version
 }
 
-resource "talos_machine_configuration_apply" "controller" {
-  count                       = var.controller_config.count
-  depends_on                  = [proxmox_virtual_environment_vm.control_plane]
-  client_configuration        = talos_machine_secrets.machine_secrets.client_configuration
-  machine_configuration_input = data.talos_machine_configuration.controller.machine_configuration
-  endpoint                    = local.controller_nodes[count.index].address
-  node                        = local.controller_nodes[count.index].address
+resource "talos_machine" "worker" {
+  for_each   = local.workers
+  depends_on = [talos_cluster.this]
+
+  node                            = each.value.ip
+  client_configuration            = talos_machine_secrets.this.client_configuration
+  machine_configuration           = data.talos_machine_configuration.node[each.key].machine_configuration
+  image                           = data.talos_image_factory_urls.this.urls.installer
+  kubeconfig_wo                   = ephemeral.talos_cluster_kubeconfig.drain.kubeconfig_raw
+  ignore_kubernetes_upgrade_drift = true
 }
 
-// ==============================================================================
-// Talos Worker Node Configuration
-// ==============================================================================
+resource "talos_cluster_kubeconfig" "this" {
+  depends_on = [talos_cluster.this]
 
-data "talos_machine_configuration" "worker" {
-  cluster_name       = var.cluster_name
-  cluster_endpoint   = local.cluster_endpoint
-  kubernetes_version = var.kubernetes_version
-  machine_type       = "worker"
-  machine_secrets    = talos_machine_secrets.machine_secrets.machine_secrets
-  config_patches     = local.config_patches_worker
-}
-
-resource "talos_machine_configuration_apply" "worker" {
-  count                       = var.worker_config.count
-  depends_on                  = [proxmox_virtual_environment_vm.talos_worker_01]
-  client_configuration        = talos_machine_secrets.machine_secrets.client_configuration
-  machine_configuration_input = data.talos_machine_configuration.worker.machine_configuration
-  endpoint                    = local.worker_nodes[count.index].address
-  node                        = local.worker_nodes[count.index].address
-}
-
-// ==============================================================================
-// Talos Cluster Bootstrap
-// ==============================================================================
-
-resource "talos_machine_bootstrap" "bootstrap" {
-  depends_on           = [talos_machine_configuration_apply.controller]
-  endpoint             = local.controller_nodes[0].address
-  client_configuration = talos_machine_secrets.machine_secrets.client_configuration
-  node                 = local.controller_nodes[0].address
+  node                 = local.first_controlplane
+  client_configuration = talos_machine_secrets.this.client_configuration
 }

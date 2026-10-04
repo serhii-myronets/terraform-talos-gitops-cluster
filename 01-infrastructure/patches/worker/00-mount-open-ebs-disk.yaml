@@ -1,6 +1,0 @@
-# This file is defined to mount the OpenEBS disk on the worker nodes.
-machine:
-  disks:
-    - device: /dev/sdb
-      partitions:
-        - mountpoint: /var/mnt/storage
