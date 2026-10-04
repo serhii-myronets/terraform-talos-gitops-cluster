@@ -1,5 +1,11 @@
+# Kept close to core's (core/02-platform/values/cilium-values.yaml in the
+# homelab repository), so the lab runs what core runs. What differs: the VMs'
+# network card carries the default route itself, so Cilium finds its device
+# without being told, and three control planes keep the operator's two
+# replicas and its default leader election.
+
 # =========================
-# CORE
+# CORE - what Talos requires
 # =========================
 
 kubeProxyReplacement: true
@@ -7,14 +13,18 @@ kubeProxyReplacement: true
 ipam:
   mode: kubernetes
 
+# Talos mounts cgroup v2 itself.
 cgroup:
   autoMount:
     enabled: false
   hostRoot: /sys/fs/cgroup
 
+# KubePrism, Talos's API server load balancer on every node.
 k8sServiceHost: localhost
 k8sServicePort: 7445
 
+# The defaults without SYS_MODULE: Talos does not let workloads load kernel
+# modules.
 securityContext:
   capabilities:
     ciliumAgent:
@@ -34,10 +44,17 @@ securityContext:
       - SYS_ADMIN
       - SYS_RESOURCE
 
+# With iptables masquerading, replies from a local NodePort or LoadBalancer
+# backend leave with the pod's port and the client resets the connection -
+# cilium-iptables-masquerade-breaks-nodeport in the homelab traps.
+bpf:
+  masquerade: true
+
 # =========================
 # PLATFORM FEATURES
 # =========================
 
+# Needs the Gateway API CRDs v1.6.1 or newer, from prepare-hook/.
 gatewayAPI:
   enabled: true
   enableAlpn: true
@@ -45,16 +62,12 @@ gatewayAPI:
 
 envoy:
   enabled: true
-
-# =========================
-# LOAD BALANCER
-# =========================
+  resources:
+    requests: {cpu: 50m, memory: 128Mi}
+    limits: {memory: 512Mi}
 
 l2announcements:
   enabled: true
-
-# devices:
-#   - eth0
 
 # =========================
 # OBSERVABILITY
@@ -63,14 +76,42 @@ l2announcements:
 hubble:
   relay:
     enabled: true
+    resources:
+      requests: {cpu: 10m, memory: 64Mi}
+      limits: {memory: 256Mi}
   ui:
     enabled: true
+    backend:
+      resources:
+        requests: {cpu: 10m, memory: 64Mi}
+        limits: {memory: 256Mi}
+    frontend:
+      resources:
+        requests: {cpu: 10m, memory: 32Mi}
+        limits: {memory: 128Mi}
 
 prometheus:
   enabled: true
+  port: 9962
   serviceMonitor:
     enabled: false
-  port: 9962
 
-extraArgs:
-  - "--prometheus-serve-addr=:9962"
+# =========================
+# RESOURCES
+# =========================
+
+# Every container gets a memory limit, far above use, so Talos's OOM
+# controller scores the pod zero and never picks it; no CPU limit, which would
+# throttle the network - talos-oom-controller-kills-pods-without-a-memory-limit
+# in the homelab traps.
+resources:
+  requests: {cpu: 100m, memory: 256Mi}
+  limits: {memory: 1Gi}
+initResources:
+  requests: {cpu: 10m, memory: 32Mi}
+  limits: {memory: 512Mi}
+
+operator:
+  resources:
+    requests: {cpu: 25m, memory: 64Mi}
+    limits: {memory: 256Mi}

@@ -31,16 +31,19 @@ Before changing anything, read in `~/homelab`:
 Proxmox VE 9.2 was reinstalled on 2026-10-03 as `00-prerequisite/README.md`
 describes: ZFS (RAID0) on the single disk with about 10% left unpartitioned,
 `sync=disabled` on `rpool/data`, HA off, the host at 192.168.8.30 on the
-flat LAN. No VMs exist yet. Still to do:
+flat LAN.
 
-- The lab's VMs and VIP within 192.168.8.31-.49, replacing the 10.1.1.0/24
-  defaults in `variables.tf`. The router's DHCP pool is .100-.249; core
-  holds .10, .11 and .15-.19.
-- A Proxmox API token instead of the root password, kept out of Git.
-- Talos brought to the version core runs, with the `qemu-guest-agent`
-  extension, since the VMs enable the agent.
-- Possibly the lab as a copy of core on Flux, to rehearse upgrades,
-  instead of its own Argo CD stack. A proposal, not a decision.
+The cluster `lab` was built the same day by `01-infrastructure`: three
+control planes at .40-.42, two workers at .45-.46, the API VIP at .50,
+Talos and Kubernetes on core's versions, with Talos provider 0.12's
+`talos_machine` and `talos_cluster`. Terraform reaches Proxmox with an API
+token in the ignored `proxmox.auto.tfvars`; state is in R2 beside core's.
+The lab keeps its own Argo CD stack rather than copying core's Flux.
+
+`02-bootstrap` is reviewed, not applied: the nodes are `NotReady` until
+Cilium runs. Its postsync hook applies the root Applications, so
+`03-gitops` is to be reviewed first - its cloudflared still claims
+`*.serhii.link`, which core's tunnel now serves.
 
 More than half of the host's power cycles have been unsafe shutdowns; a UPS,
 or finding what cuts its power, comes before anything here should last.

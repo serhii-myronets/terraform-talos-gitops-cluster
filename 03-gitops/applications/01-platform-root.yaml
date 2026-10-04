@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/SerhiiMyronets/homelab-talos-kubernetes-terraform.git
+    repoURL: https://github.com/serhii-myronets/terraform-talos-gitops-cluster.git
     targetRevision: homelab
     path: 03-gitops/applications/01-platform
   destination:

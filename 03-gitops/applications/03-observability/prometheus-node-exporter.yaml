@@ -8,7 +8,7 @@ metadata:
 spec:
   project: observability
   sources:
-    - repoURL: https://github.com/SerhiiMyronets/homelab-talos-kubernetes-terraform.git
+    - repoURL: https://github.com/serhii-myronets/terraform-talos-gitops-cluster.git
       targetRevision: homelab
       path: 03-gitops/components/03-observability/prometheus-node-exporter
 
@@ -19,7 +19,7 @@ spec:
         valueFiles:
           - $values/03-gitops/components/03-observability/prometheus-node-exporter/values.yaml
 
-    - repoURL: https://github.com/SerhiiMyronets/homelab-talos-kubernetes-terraform.git
+    - repoURL: https://github.com/serhii-myronets/terraform-talos-gitops-cluster.git
       targetRevision: homelab
       ref: values
   destination:

@@ -1,78 +1,47 @@
 # 02-bootstrap
 
-This stage installs the core networking and GitOps components into the Kubernetes cluster using Helmfile.
+Helmfile that brings the lab's cluster from `NotReady` to Argo CD: Cilium, then Argo CD, then the root Applications from which Argo CD syncs [03-gitops](../03-gitops/README.md). Everything after this stage is Argo CD's.
 
-It assumes that the cluster is already initialized and accessible using the generated `kubeconfig` from the previous stage (`01-infrastructure`).
+| Release | Chart | Version |
+|---|---|---|
+| `cilium` | `cilium/cilium` | 1.20.2 |
+| `argocd` | `argo/argo-cd` | 10.9.6 (Argo CD v3.5) |
 
-## Purpose
+Every command is pinned to the kubeconfig context `admin@lab`, hooks included, so nothing here reaches core whatever context is current.
 
-The components installed in this phase provide the cluster CNI (Cilium) and the GitOps controller (Argo CD). All subsequent workloads are managed by Argo CD via the `03-gitops` layer.
+## What runs, in order
 
-## Installed Components
+1. **prepare hook** - `kubectl apply -k prepare-hook/ --server-side`: the Gateway API CRDs (v1.6.2, which Cilium 1.20 requires), the CRDs that 03-gitops applications still expect to find, and `initial-secret.yaml`, the Infisical credential External Secrets reads. Helmfile runs it before every command, `diff` and `lint` included; it is idempotent.
+2. **cilium** - CNI and kube-proxy replacement with BPF masquerading, Gateway API, L2 announcements, Hubble and Prometheus metrics. Its values follow core's; every container has a memory limit, so Talos's OOM controller never picks Cilium.
+3. **argocd** - installs its own CRDs. Argo CD then manages itself from the same chart and values (`03-gitops/applications/00-core/argocd.yaml`, whose chart version moves with this one).
+4. **postsync hook of argocd** - `kubectl apply -f ../03-gitops/applications/`: the four root Applications.
 
-| Name      | Chart version | Purpose                                        |
-| --------- | ------------- | ---------------------------------------------- |
-| `cilium`  | `1.19.0`      | CNI with kube-proxy replacement and Gateway API |
-| `argo-cd` | `9.4.2`       | GitOps controller for managing Kubernetes apps  |
+## Before the first run
 
-## Prepare Hook
+`prepare-hook/initial-secret.yaml`, ignored by Git, made from [`initial-secret.yaml.example`](./prepare-hook/initial-secret.yaml.example) with the Infisical machine identity's client ID and secret.
 
-Before Helmfile applies any Helm releases, it runs a `prepare` hook. This hook performs two steps:
-
-1. **Initial Kubernetes secrets** — applies cluster secrets (e.g. image pull secrets, external-secrets bootstrap credentials) via kustomize so they are available before any chart is installed.
-2. **Argo CD CRDs** — applies the Argo CD Custom Resource Definitions server-side (`--server-side`) before the Argo CD Helm release runs, avoiding CRD size limits that can cause a standard `kubectl apply` to fail.
-
-## Cilium Configuration
-
-Cilium is deployed with the following features enabled:
-
-- **kube-proxy replacement** — Cilium replaces `kube-proxy` entirely using eBPF for service routing.
-- **Gateway API** — Cilium implements the Kubernetes Gateway API with ALPN and `AppProtocol` support for HTTP/2 and gRPC routing.
-- **L2 announcements** — Cilium announces LoadBalancer service IPs on the local L2 network, enabling bare-metal load balancing without an external LB.
-- **Hubble relay + UI** — the Hubble observability plane is enabled with both the relay (gRPC API) and the web UI for network flow visibility.
-- **Prometheus metrics** — Cilium exposes Prometheus metrics on port `9962`.
-
-## Usage
-
-Before running this stage, make sure you have:
-
-* Access to the cluster via `kubeconfig`
-* Talos cluster is fully bootstrapped and reachable
-* Helmfile and Helm installed on your machine
-
-To apply the bootstrap components:
+## Run
 
 ```bash
 helmfile apply
 ```
 
-This command runs the prepare hook and then installs Cilium and Argo CD with their configured values.
-
-## Readiness Check
-
-After applying, verify that both components are running:
+To preview without side effects - `helmfile diff` applies the prepare hook - call Helm directly:
 
 ```bash
-# Check Cilium agent status
-cilium status --wait
-
-# Check Argo CD server deployment
-kubectl get deployments -n argocd
+helm diff upgrade cilium cilium/cilium --version 1.20.2 -n kube-system \
+  -f values/cilium-values.yaml --kube-context admin@lab
 ```
 
-Example output when Argo CD is ready:
+## Check
 
+```bash
+kubectl --context admin@lab get nodes        # Ready once Cilium runs
+cilium --context admin@lab status --wait
+kubectl --context admin@lab -n argocd get deploy
+kubectl --context admin@lab -n argocd get secret argocd-initial-admin-secret \
+  -o jsonpath='{.data.password}' | base64 -d   # the admin password
 ```
-NAME                               READY   UP-TO-DATE   AVAILABLE   AGE
-argocd-applicationset-controller   1/1     1            1           2m
-argocd-dex-server                  1/1     1            1           2m
-argocd-notifications-controller    1/1     1            1           2m
-argocd-redis                       1/1     1            1           2m
-argocd-repo-server                 1/1     1            1           2m
-argocd-server                      1/1     1            1           2m
-```
-
-Once both checks pass, the cluster is running Cilium CNI and Argo CD is ready to manage GitOps applications.
 
 ## Navigation
 

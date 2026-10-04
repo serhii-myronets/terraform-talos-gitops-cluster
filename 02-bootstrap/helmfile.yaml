@@ -1,3 +1,9 @@
+# Pinned to the lab's kubeconfig context, hooks included: they run plain
+# kubectl, which would otherwise use whatever context is current - core's, on
+# this Mac.
+helmDefaults:
+  kubeContext: admin@lab
+
 repositories:
   - name: argo
     url: https://argoproj.github.io/argo-helm
@@ -5,27 +11,36 @@ repositories:
     url: https://helm.cilium.io
 
 hooks:
-  - events: [ "prepare" ]
+  # Runs before every command, diff included - see
+  # helmfile-diff-applies-the-prepare-hook in the homelab repository's
+  # docs/traps.yaml. Idempotent.
+  - events: ["prepare"]
     showlogs: true
-    command: "kubectl"
-    args: [ "apply", "-k", "./prepare-hook/", "--server-side" ]
-
-  - events: [ "prepare" ]
-    showlogs: true
-    command: "kubectl"
-    args: [ "apply", "-k", "https://github.com/argoproj/argo-cd/manifests/crds?ref=stable", "--server-side" ]
+    command: kubectl
+    args: ["--context", "admin@lab", "apply", "-k", "./prepare-hook/", "--server-side"]
 
 releases:
   - name: cilium
     namespace: kube-system
     chart: cilium/cilium
-    version: 1.19.0
+    version: 1.20.2
     values:
       - values/cilium-values.yaml
 
+  # Argo CD then manages itself from the same chart and values:
+  # 03-gitops/applications/00-core/argocd.yaml, whose chart version moves with
+  # this one.
   - name: argocd
     namespace: argocd
     chart: argo/argo-cd
-    version: 9.4.2
+    version: 10.9.6
+    needs:
+      - kube-system/cilium
     values:
       - values/argocd-values.yaml
+    hooks:
+      # The four root Applications; from here Argo CD syncs 03-gitops.
+      - events: ["postsync"]
+        showlogs: true
+        command: kubectl
+        args: ["--context", "admin@lab", "apply", "-f", "../03-gitops/applications/"]

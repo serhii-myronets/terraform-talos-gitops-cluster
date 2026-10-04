@@ -1,28 +1,29 @@
+# Read by the bootstrap release and by the Application through which Argo CD
+# manages itself (03-gitops/applications/00-core/argocd.yaml).
+
+# The chart installs and upgrades its own CRDs, and keeps them on uninstall.
+crds:
+  install: true
+  keep: true
+
+# Login as admin, with the password in the secret argocd-initial-admin-secret.
+# Anonymous admin access is off: the UI has had a public route.
 configs:
   cm:
     kustomize.buildOptions: "--enable-helm"
-    users.anonymous.enabled: "true"
-  rbac:
-    policy.default: role:admin
+
+# TLS ends at the Cilium Gateway.
 server:
   extraArgs:
     - --insecure
 
-# Disable Dex if you don't need external Auth (OIDC/SAML)
+# Not used here: no external login, no notifications, no ApplicationSets.
 dex:
   enabled: false
-
-# Disable Notifications controller to save RAM
 notifications:
   enabled: false
-
-# ApplicationSet controller - can be disabled if not using generator patterns
 applicationSet:
   replicas: 0
-
-crds:
-  install: false
-
 
 controller:
   metrics:
