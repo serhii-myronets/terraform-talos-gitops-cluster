@@ -5,9 +5,10 @@
 #   contexts.sh remove <cluster>
 #
 # add replaces the Talos context <cluster> in ~/.talos/config and the
-# Kubernetes context admin@<cluster> - with its cluster and user - in
+# Kubernetes context <cluster> - with its cluster and user - in
 # ~/.kube/config, from TALOSCONFIG and KUBECONFIG in the folder; remove takes
 # them out. Every other context, and which one is current, is left as it was.
+# Kubernetes entries under Talos's own name, admin@<cluster>, go too.
 # Run by Terraform (clients.tf); nothing is printed but the contexts' names.
 set -eu
 
@@ -20,12 +21,19 @@ tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 umask 077
 
-# Out of ~/.kube/config, if there: admin@<cluster> and its cluster and user.
+# Out of ~/.kube/config, if there: the context <cluster>, its cluster and
+# user, and the same under Talos's name admin@<cluster>.
 kube_remove() {
   [ -f "$kube" ] || return 0
-  kubectl --kubeconfig "$kube" config delete-context "admin@$cluster" >/dev/null 2>&1 || true
+  for name in "$cluster" "admin@$cluster"; do
+    kubectl --kubeconfig "$kube" config delete-context "$name" >/dev/null 2>&1 || true
+    kubectl --kubeconfig "$kube" config delete-user "$name" >/dev/null 2>&1 || true
+  done
   kubectl --kubeconfig "$kube" config delete-cluster "$cluster" >/dev/null 2>&1 || true
-  kubectl --kubeconfig "$kube" config delete-user "admin@$cluster" >/dev/null 2>&1 || true
+}
+kube_current() {
+  [ -f "$kube" ] || return 0
+  kubectl --kubeconfig "$kube" config current-context 2>/dev/null || true
 }
 
 # The Talos contexts' names, and the current one.
@@ -69,18 +77,23 @@ add)
     talosctl --talosconfig "$talos" config context "$current" >/dev/null
   fi
 
-  # The first file's current-context wins, so ~/.kube/config keeps its own.
+  # The first file's current-context wins, so ~/.kube/config keeps its own -
+  # unless it was this cluster's, which then points at the new context.
+  kube_was=$(kube_current)
   kube_remove
   mkdir -p "$(dirname "$kube")"
   [ -f "$kube" ] || : >"$kube"
   KUBECONFIG="$kube:$tmp/kubeconfig" kubectl config view --flatten >"$tmp/merged"
   cat "$tmp/merged" >"$kube"
-  echo "contexts added: $cluster (talosctl), admin@$cluster (kubectl)"
+  case $kube_was in
+  "$cluster" | "admin@$cluster") kubectl --kubeconfig "$kube" config use-context "$cluster" >/dev/null ;;
+  esac
+  echo "contexts added: $cluster (talosctl), $cluster (kubectl)"
   ;;
 remove)
   talos_remove
   kube_remove
-  echo "contexts removed: $cluster (talosctl), admin@$cluster (kubectl)"
+  echo "contexts removed: $cluster (talosctl), $cluster (kubectl)"
   ;;
 *)
   echo "usage: $0 add <cluster> <project id> <folder> | remove <cluster>" >&2

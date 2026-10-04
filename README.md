@@ -65,7 +65,7 @@ Follow the stage-specific README files in order:
 # Run from 01-infrastructure
 terraform init
 terraform plan -out=lab.plan && terraform apply lab.plan
-# The contexts lab and admin@lab are now in ~/.talos/config and ~/.kube/config
+# The context lab is now in ~/.talos/config and in ~/.kube/config
 
 # Then bootstrap: Cilium, External Secrets, Argo CD, and the root Application
 cd ../02-bootstrap

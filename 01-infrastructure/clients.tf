@@ -1,7 +1,7 @@
 # The admin's client configurations: made from the Talos secrets, written to
 # Infisical beside them, and merged into this Mac's ~/.talos/config and
-# ~/.kube/config - the contexts lab and admin@lab - with nothing to copy by
-# hand. A destroy takes them out of both places again.
+# ~/.kube/config - both contexts named lab - with nothing to copy by hand.
+# A destroy takes them out of both places again.
 
 # The admin kubeconfig, made from the secrets like the talosconfig: valid as
 # long as the Kubernetes CA, the same on every run.
@@ -11,12 +11,36 @@ ephemeral "talos_cluster_kubeconfig" "admin" {
   machine_secrets = local.machine_secrets
 }
 
+data "infisical_secret_metadata" "talos_secrets" {
+  project_id       = local.infisical.project_id
+  environment_slug = "prod"
+  folder_path      = local.infisical.talos_path
+  name             = "SECRETS_YAML"
+}
+
 locals {
+  # Talos names the kubeconfig's context and user admin@lab; here both are
+  # named for the cluster, lab, as the Talos context is - in ~/.kube/config
+  # and in core's Headlamp alike.
+  kubeconfig_talos = yamldecode(ephemeral.talos_cluster_kubeconfig.admin.kubeconfig_raw)
+  kubeconfig = yamlencode(merge(local.kubeconfig_talos, {
+    contexts = [{
+      name    = local.cluster.name
+      context = { cluster = local.cluster.name, user = local.cluster.name, namespace = "default" }
+    }]
+    users             = [for user in local.kubeconfig_talos.users : merge(user, { name = local.cluster.name })]
+    "current-context" = local.cluster.name
+  }))
+
   # Both configurations follow from the secrets alone, so they need writing
-  # again only when the secrets change. A write-only value cannot be compared
-  # with what Infisical holds; this number, from the secrets' digest, is what
-  # tells Terraform to write them again.
-  clients_version = parseint(substr(sha256(data.infisical_secrets.talos.secrets["SECRETS_YAML"].value), 0, 8), 16)
+  # again only when the secrets change - or how they are written, which
+  # clients_format counts. A write-only value cannot be compared with what
+  # Infisical holds, so a version tells Terraform to write them again, and
+  # the provider takes only a version higher than the last: the secrets'
+  # own version in Infisical, which only grows, times 100, plus the format.
+  # Bump clients_format when this file changes what it writes.
+  clients_format  = 2 # 2: contexts named for the cluster
+  clients_version = data.infisical_secret_metadata.talos_secrets.secret_version * 100 + local.clients_format
 }
 
 # Write-only: in Infisical, never in Terraform's state.
@@ -34,7 +58,7 @@ resource "infisical_secret" "kubeconfig" {
   env_slug         = "prod"
   folder_path      = local.infisical.talos_path
   name             = "KUBECONFIG"
-  value_wo         = ephemeral.talos_cluster_kubeconfig.admin.kubeconfig_raw
+  value_wo         = local.kubeconfig
   value_wo_version = local.clients_version
 }
 
@@ -47,7 +71,7 @@ resource "infisical_secret" "headlamp_kubeconfig" {
   env_slug         = "prod"
   folder_path      = "/system/headlamp"
   name             = "LAB_KUBECONFIG"
-  value_wo         = ephemeral.talos_cluster_kubeconfig.admin.kubeconfig_raw
+  value_wo         = local.kubeconfig
   value_wo_version = local.clients_version
 }
 

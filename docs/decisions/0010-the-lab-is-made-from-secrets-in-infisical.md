@@ -28,7 +28,7 @@ and the same every time, so they are never kept in Terraform's state; nodes
 and `talos_cluster` take the client configuration write-only. Terraform
 writes both beside the secrets, as `TALOSCONFIG` and `KUBECONFIG`, and
 `scripts/contexts.sh` merges them into the Mac's `~/.talos/config` and
-`~/.kube/config`, replacing the contexts `lab` and `admin@lab` and leaving
+`~/.kube/config`, replacing the context `lab` in each and leaving
 every other; a destroy removes them again. They are written again only when
 the secrets change.
 

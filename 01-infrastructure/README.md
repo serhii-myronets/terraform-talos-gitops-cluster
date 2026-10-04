@@ -53,7 +53,7 @@ terraform init
 terraform plan -out=lab.plan
 terraform apply lab.plan
 
-kubectl --context admin@lab get nodes
+kubectl --context lab get nodes
 ```
 
 Nodes stay `NotReady` until Cilium is installed in 02-bootstrap.
@@ -62,7 +62,7 @@ Nodes stay `NotReady` until Cilium is installed in 02-bootstrap.
 
 The cluster is made from **Talos secrets kept in Infisical**, `proxmox-lab` `/system/talos/SECRETS_YAML` in talosctl's `secrets.yaml` format ([decisions/0010](../docs/decisions/0010-the-lab-is-made-from-secrets-in-infisical.md)). They were placed there once; Terraform only reads them, so a destroy and an apply bring back the same cluster - the same certificate authorities, the same key ServiceAccount tokens are signed with.
 
-From them, on every run and never stored in the state, Terraform makes the admin's talosconfig and kubeconfig, valid as long as their CAs. After an apply it writes them beside the secrets, as `TALOSCONFIG` and `KUBECONFIG`, and merges them into this Mac's `~/.talos/config` and `~/.kube/config` as the contexts `lab` and `admin@lab`, replacing the lab's and leaving core's and which context is current alone. A destroy takes them out of both places.
+From them, on every run and never stored in the state, Terraform makes the admin's talosconfig and kubeconfig, valid as long as their CAs. After an apply it writes them beside the secrets, as `TALOSCONFIG` and `KUBECONFIG`, and merges them into this Mac's `~/.talos/config` and `~/.kube/config` as the context `lab` in each - Kubernetes's renamed from Talos's `admin@lab` - replacing the lab's and leaving core's and which context is current alone. A destroy takes them out of both places.
 
 On another machine, after `infisical login`:
 

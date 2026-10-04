@@ -7,7 +7,7 @@ meta:
   tags: [lab, talos, kubernetes, cilium, argocd, external-secrets, external-dns]
 
 cluster:
-  name: lab                         # Talos context lab, Kubernetes admin@lab
+  name: lab                         # the context lab, for talosctl and kubectl alike
   api: https://192.168.8.50:6443    # Layer2 VIP on the control planes' lan link
   talos: v1.14.1                    # contract v1.14 - decisions/0002
   kubernetes: v1.37.0
@@ -21,7 +21,7 @@ cluster:
     - {name: worker-2, ip: 192.168.8.46, vm: 146, cpu: 8, memory_gb: 18}
   topology: every node labelled region proxmox, zone proxmox - Proxmox CSI places volumes by them
 
-bootstrap:                          # 02-bootstrap, Helmfile, context admin@lab
+bootstrap:                          # 02-bootstrap, Helmfile, context lab
   cilium: 1.20.2                    # kube-proxy replacement, BPF masquerade, Gateway API
   external-secrets: 2.11.0
   argo-cd: 10.9.6                   # Argo CD v3.5.3; anonymous admin
@@ -67,7 +67,7 @@ secrets:
   written_to_core: >-
     The admin kubeconfig again, into core's project at
     /system/headlamp/LAB_KUBECONFIG, for core's Headlamp, which shows the
-    lab as admin@lab (01-infrastructure/clients.tf; the homelab repository's
+    lab as the context lab (01-infrastructure/clients.tf; the homelab repository's
     decisions/0042).
 
 applications:                       # 03-gitops/apps/kustomization.yaml - decisions/0005

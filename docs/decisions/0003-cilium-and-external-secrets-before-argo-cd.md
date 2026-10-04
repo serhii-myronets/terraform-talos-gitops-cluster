@@ -9,7 +9,7 @@ tags: [helmfile, cilium, external-secrets, argocd, bootstrap]
 # Cilium, External Secrets and Argo CD itself are kept by Helmfile, outside Argo CD
 
 `02-bootstrap/helmfile.yaml` installs Cilium, External Secrets and Argo CD,
-in that order, pinned to the kubeconfig context `admin@lab` so that nothing
+in that order, pinned to the kubeconfig context `lab` so that nothing
 reaches core whatever context is current, and keeps all three: their
 upgrades are a `helmfile apply`. Core does the same, its Flux Operator
 included (homelab: decisions/0015, 0021).

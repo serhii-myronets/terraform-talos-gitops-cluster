@@ -8,7 +8,7 @@ Helmfile that brings the lab's cluster from `NotReady` to Argo CD: Cilium, Exter
 | `external-secrets` | `external-secrets/external-secrets` | 2.11.0 |
 | `argocd` | `argo/argo-cd` | 10.9.6 (Argo CD v3.5) |
 
-Every command is pinned to the kubeconfig context `admin@lab`, hooks included, so nothing here reaches core whatever context is current.
+Every command is pinned to the kubeconfig context `lab`, hooks included, so nothing here reaches core whatever context is current.
 
 ## What runs, in order
 
@@ -30,16 +30,16 @@ To preview without side effects - `helmfile diff` applies the prepare hook - cal
 
 ```bash
 helm diff upgrade cilium cilium/cilium --version 1.20.2 -n kube-system \
-  -f values/cilium-values.yaml --kube-context admin@lab
+  -f values/cilium-values.yaml --kube-context lab
 ```
 
 ## Check
 
 ```bash
-kubectl --context admin@lab get nodes        # Ready once Cilium runs
-cilium --context admin@lab status --wait
-kubectl --context admin@lab -n argocd get deploy
-kubectl --context admin@lab -n argocd get secret argocd-initial-admin-secret \
+kubectl --context lab get nodes        # Ready once Cilium runs
+cilium --context lab status --wait
+kubectl --context lab -n argocd get deploy
+kubectl --context lab -n argocd get secret argocd-initial-admin-secret \
   -o jsonpath='{.data.password}' | base64 -d   # the admin password
 ```
 

@@ -2,7 +2,7 @@
 # kubectl, which would otherwise use whatever context is current - core's, on
 # this Mac.
 helmDefaults:
-  kubeContext: admin@lab
+  kubeContext: lab
 
 repositories:
   - name: argo
@@ -19,7 +19,7 @@ hooks:
   - events: ["prepare"]
     showlogs: true
     command: kubectl
-    args: ["--context", "admin@lab", "apply", "-k", "./prepare-hook/", "--server-side"]
+    args: ["--context", "lab", "apply", "-k", "./prepare-hook/", "--server-side"]
 
 releases:
   - name: cilium
@@ -58,4 +58,4 @@ releases:
       - events: ["postsync"]
         showlogs: true
         command: kubectl
-        args: ["--context", "admin@lab", "apply", "-f", "../03-gitops/root.yaml"]
+        args: ["--context", "lab", "apply", "-f", "../03-gitops/root.yaml"]
