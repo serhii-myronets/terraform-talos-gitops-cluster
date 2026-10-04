@@ -59,7 +59,8 @@ secrets:
     /system/cloudflare (TUNNEL_CREDENTIALS, DNS_API_TOKEN), /system/bind
     (TSIG_KEY, TSIG_SECRET), /system/lab-ca (TLS_CRT, TLS_KEY, CA_CRT),
     /system/proxmox-csi (TOKEN_ID, TOKEN_SECRET), /system/observability
-    (INGEST_TOKEN, write-only on core - decisions/0008), /system/minio,
+    (INGEST_TOKEN, write-only on core - decisions/0008), /system/infisical
+    (CLIENT_ID, CLIENT_SECRET - a copy of initial-secret.yaml), /system/minio,
     /system/postgresql
 
 applications:                       # 03-gitops/apps/kustomization.yaml - decisions/0005

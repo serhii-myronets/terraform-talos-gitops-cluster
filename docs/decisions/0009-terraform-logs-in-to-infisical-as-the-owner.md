@@ -29,7 +29,7 @@ Rejected:
 - **A machine identity `terraform`**, an organization admin with Universal
   Auth credentials in the Keychain: the same reach, plus a long-lived secret
   to keep, and the fourth of the five identities the free plan allows,
-  people included.
+  people included - the owner, `core` and `lab` hold three.
 - **The token in a tfvars file**: a secret in plain text on disk, edited
   every ten days.
 - **direnv and an .envrc**: a tool more, and the token read only on
