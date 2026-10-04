@@ -5,7 +5,7 @@ not this directory, so nothing here is deployed, and versions are as they
 were left - review them before bringing anything back.
 
 Most are from the lab before its rebuild in 2026-10, in the old layout: a
-component folder of values and manifests, with its Application gone. Two are
+component folder of values and manifests, with its Application gone. Three are
 already in the current layout and move back as they are:
 
 - **openebs** - `application.yaml` beside `app/`, OpenEBS 4.1.1 with
@@ -20,6 +20,15 @@ already in the current layout and move back as they are:
   second stack in pieces. Replaced on 2026-10-04 by
   `system/observability/victoria-metrics`, the lab's agents writing to
   core's stores (docs/decisions/0008).
+
+- **awaiting-review** - five applications carried over from the earlier
+  lab and not yet reviewed, in the current layout but still in the older
+  multi-source form, a chart plus `$values`: minio (from
+  `system/storage`), postgresql and strimzi (`system/platform`), kafka and
+  otel-demo (`services`). Moved out of `apps/` on 2026-10-04, so that
+  `apps/` holds only what runs. Their `application.yaml` still names its
+  old path, so each moves back to where it was; strimzi needs its CRDs
+  again, which 02-bootstrap's prepare hook no longer lists.
 
 `assets/` holds the screenshots of that earlier lab - Proxmox, Argo CD,
 Grafana, Tempo, Jaeger, Hubble, Longhorn and the rest - which the README

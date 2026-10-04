@@ -2,8 +2,9 @@
 # app/. Laid out as core's apps/ is - system/<category>/<name> and
 # services/<name>.
 #
-# An application is listed only once it has been reviewed for the lab; the
-# rest wait under apps/ unlisted, and listing one is what deploys it.
+# An application is listed only once it has been reviewed for the lab, and
+# listing one is what deploys it. Those not yet reviewed wait outside apps/,
+# in archive/awaiting-review.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
@@ -21,9 +22,3 @@ resources:
   - system/platform/metrics-server/application.yaml
   # observability
   - system/observability/victoria-metrics/application.yaml
-  # Not yet reviewed:
-  # - system/storage/minio/application.yaml
-  # - system/platform/postgresql/application.yaml
-  # - system/platform/strimzi/application.yaml
-  # - services/kafka/application.yaml
-  # - services/otel-demo/application.yaml

@@ -16,8 +16,10 @@ renders its own; 02-bootstrap applies it.
 
 The applications came over from the lab as it was before the rebuild, and
 each is reviewed before it runs again - versions, values, secrets, names.
-Listing an application in `apps/kustomization.yaml` is what deploys it; the
-unreviewed ones wait in `apps/` with their line commented out. The root does
+Listing an application in `apps/kustomization.yaml` is what deploys it.
+Since 2026-10-04 the unreviewed ones wait in `archive/awaiting-review`, so
+that `apps/` holds only what runs; until then they waited in `apps/` with
+their line commented out. The root does
 not prune, so taking a line out leaves the application running until it is
 deleted on purpose.
 

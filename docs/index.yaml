@@ -26,7 +26,7 @@ files:
     tags: [sessions, handoff]
     read_when: starting work
   - path: 03-gitops/apps/kustomization.yaml
-    holds: which Argo CD applications run, and which wait for review
+    holds: which Argo CD applications run
     tags: [argocd, gitops]
   - path: ~/homelab/docs/hosts/proxmox.yaml
     holds: the Proxmox host - hardware, disk layout, guests

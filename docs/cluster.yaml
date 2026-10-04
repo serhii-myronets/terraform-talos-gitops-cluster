@@ -81,9 +81,9 @@ applications:                       # 03-gitops/apps/kustomization.yaml - decisi
     - system/platform/argocd             # its route only; Argo CD is 02-bootstrap's
     - system/platform/metrics-server     # chart 3.14.0
     - system/observability/victoria-metrics  # chart 0.95.0, agents only, writing to core - decisions/0008
-  waiting_for_review:
-    - system/storage/minio
-    - system/platform/postgresql
-    - system/platform/strimzi
-    - services/kafka
-    - services/otel-demo
+  waiting_for_review:                # in archive/awaiting-review, outside apps/
+    - minio                          # was system/storage
+    - postgresql                     # was system/platform
+    - strimzi                        # was system/platform
+    - kafka                          # was services
+    - otel-demo                      # was services

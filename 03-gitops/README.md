@@ -12,19 +12,19 @@ Everything Argo CD runs on the lab, laid out as core's `core/03-gitops/apps` is 
 │   ├── system/
 │   │   ├── network/          gateway-system, cloudflared, external-dns
 │   │   ├── security/         external-secrets, cert-manager
-│   │   ├── storage/          proxmox-csi, minio
-│   │   ├── platform/         argocd, metrics-server, postgresql, strimzi
-│   │   └── observability/    grafana, loki, tempo, victoria-metrics-*, otel-operator, ...
-│   └── services/             kafka, otel-demo
+│   │   ├── storage/          proxmox-csi
+│   │   ├── platform/         argocd, metrics-server
+│   │   └── observability/    victoria-metrics
+│   └── services/             none yet
 ```
 
-Each application is a folder: `application.yaml`, the Argo CD Application, and `app/`, everything it deploys. `app/kustomization.yaml` lists the manifests and renders Helm charts with `helmCharts:` from the values beside it, so the Application has one source - the folder. Applications not yet reviewed still use the older multi-source form, a chart plus `$values`, until their review moves them.
+Each application is a folder: `application.yaml`, the Argo CD Application, and `app/`, everything it deploys. `app/kustomization.yaml` lists the manifests and renders Helm charts with `helmCharts:` from the values beside it, so the Application has one source - the folder.
 
 ## How it runs
 
 02-bootstrap's postsync hook applies `root.yaml`. The root Application renders `apps/kustomization.yaml` and keeps every Application listed there, each syncing automatically from its own folder. All use the `default` project.
 
-**An application runs only once it is listed.** The applications carried over from the earlier lab are being reviewed one at a time; the ones not yet reviewed stay in `apps/` with their line commented out. Listing one deploys it. Taking one off the list does not delete it: the root does not prune.
+**An application runs only once it is listed.** The applications carried over from the earlier lab are being reviewed one at a time; the ones not yet reviewed wait in [`archive/awaiting-review`](../archive/awaiting-review), outside what Argo CD reads, and move back into `apps/` once reviewed. Listing one deploys it. Taking one off the list does not delete it: the root does not prune.
 
 ## Names and secrets
 

@@ -3,7 +3,3 @@ resources:
   # needs v1.6.1 or newer - cilium-gateway-api-needs-v1-6-crds in the homelab
   # traps.
   - https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.2/standard-install.yaml
-  # Off until the applications that use them are kept in 03-gitops.
-  # - https://github.com/prometheus-operator/prometheus-operator/releases/download/v0.89.0/stripped-down-crds.yaml
-  # - https://github.com/strimzi/strimzi-kafka-operator/releases/download/0.50.0/strimzi-crds-0.50.0.yaml
-  # - https://raw.githubusercontent.com/VictoriaMetrics/helm-charts/master/charts/victoria-metrics-operator/charts/crds/crds/crd.yaml
