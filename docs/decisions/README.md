@@ -17,3 +17,4 @@ docs/decisions/; these are the lab's own.
 | [0003](0003-cilium-and-external-secrets-before-argo-cd.md) | Cilium and External Secrets are bootstrapped by Helmfile, outside Argo CD | accepted | helmfile, cilium, external-secrets |
 | [0004](0004-the-lab-holds-nothing-of-core.md) | The lab holds no credential of core's | accepted | infisical, secrets, cloudflare |
 | [0005](0005-applications-run-once-listed.md) | 03-gitops is laid out as core's, and an application runs once it is listed | accepted | argocd, gitops, layout |
+| [0006](0006-lab-ca-under-home-ca.md) | The lab's .home certificates come from lab-ca, an intermediate under home-ca limited to .home | accepted | tls, cert-manager, home-ca |

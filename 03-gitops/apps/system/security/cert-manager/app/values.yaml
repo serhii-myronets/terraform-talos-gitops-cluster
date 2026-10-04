@@ -1,1 +1,23 @@
-installCRDs: false
+# As core's (core/03-gitops/apps/system/security/cert-manager in the homelab
+# repository).
+
+# The chart owns its CRDs, so they upgrade with it.
+crds:
+  enabled: true
+
+resources:
+  requests: {cpu: 10m, memory: 64Mi}
+  limits: {memory: 256Mi}
+webhook:
+  resources:
+    requests: {cpu: 10m, memory: 32Mi}
+    limits: {memory: 128Mi}
+cainjector:
+  resources:
+    requests: {cpu: 10m, memory: 64Mi}
+    limits: {memory: 256Mi}
+
+# A Helm hook that only waits for the API to answer; rendered by kustomize it
+# would be an ordinary Job for Argo CD to keep.
+startupapicheck:
+  enabled: false

@@ -13,8 +13,8 @@ resources:
   - system/network/external-dns/application.yaml
   # security
   - system/security/external-secrets/application.yaml
+  - system/security/cert-manager/application.yaml
   # Not yet reviewed:
-  # - system/security/cert-manager/application.yaml
   # - system/storage/openebs/application.yaml
   # - system/storage/minio/application.yaml
   # - system/platform/argocd/application.yaml

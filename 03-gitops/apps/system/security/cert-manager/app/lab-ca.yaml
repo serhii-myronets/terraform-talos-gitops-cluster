@@ -1,0 +1,43 @@
+# The lab's own authority, lab-ca: an intermediate under the house's home-ca,
+# limited by a name constraint to .home and to issuing nothing but server
+# certificates (pathlen 0). Devices that trust home-ca trust what it signs,
+# and nothing more is installed on them. The lab never holds home-ca's key:
+# lab-ca was signed with it once, on the Mac, and lives in the lab's
+# Infisical project at /system/lab-ca - see docs/decisions/0006.
+#
+# It is valid until 2031-10-03, and nothing renews it: issue a new one the
+# same way before then.
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: lab-ca
+  namespace: cert-manager
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: infisical-cloud
+  target:
+    name: lab-ca
+    template:
+      type: kubernetes.io/tls
+      engineVersion: v2
+      data:
+        tls.crt: "{{ .crt }}"
+        tls.key: "{{ .key }}"
+        ca.crt: "{{ .root }}"
+  data:
+    - secretKey: crt
+      remoteRef: {key: /system/lab-ca/TLS_CRT}
+    - secretKey: key
+      remoteRef: {key: /system/lab-ca/TLS_KEY}
+    - secretKey: root
+      remoteRef: {key: /system/lab-ca/CA_CRT}
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: lab-ca
+spec:
+  ca:
+    secretName: lab-ca

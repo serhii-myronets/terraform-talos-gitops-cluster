@@ -1,22 +1,27 @@
+# One certificate for the lab's local names, presented by the Gateway's https
+# listener. Not a wildcard: Apple and Chrome refuse "*.home", a wildcard
+# directly under a top-level name. Every .home name a lab service answers on
+# is listed here - and only the lab's: core lists its own in its home-wildcard
+# certificate, and a name in both would be served by whichever cluster's DNS
+# record came first.
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: ingress
-  namespace: cert-manager
+  name: home-tls
+  namespace: gateway-system
 spec:
-  isCA: true
-  commonName: Kubernetes Ingress
-  secretName: ingress-tls
+  secretName: home-tls
+  issuerRef:
+    kind: ClusterIssuer
+    name: lab-ca
+  dnsNames:
+    - argocd.home
+  duration: 8760h
+  renewBefore: 720h
   privateKey:
     algorithm: ECDSA
     size: 256
-  duration: 4320h
-  subject:
-    organizations:
-      - cluster
-    organizationalUnits:
-      - Kubernetes
-  issuerRef:
-    name: selfsigned
-    kind: ClusterIssuer
-    group: cert-manager.io
+  # Apple platforms reject a server certificate without serverAuth.
+  usages:
+    - server auth
+    - digital signature

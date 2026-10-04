@@ -3,9 +3,6 @@ resources:
   # needs v1.6.1 or newer - cilium-gateway-api-needs-v1-6-crds in the homelab
   # traps.
   - https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.2/standard-install.yaml
-  # cert-manager's chart in 03-gitops is set not to install its CRDs
-  # (installCRDs: false), until it installs its own.
-  - https://github.com/jetstack/cert-manager/releases/download/v1.19.3/cert-manager.crds.yaml
   # Off until the applications that use them are kept in 03-gitops.
   # - https://github.com/prometheus-operator/prometheus-operator/releases/download/v0.89.0/stripped-down-crds.yaml
   # - https://github.com/strimzi/strimzi-kafka-operator/releases/download/0.50.0/strimzi-crds-0.50.0.yaml

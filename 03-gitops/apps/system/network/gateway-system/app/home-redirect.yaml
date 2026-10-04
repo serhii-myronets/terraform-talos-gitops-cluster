@@ -1,0 +1,18 @@
+# Everything under .home moves to HTTPS. It attaches to the http-home listener
+# alone, which admits no other route, so this is the only answer a local name
+# gets over plain HTTP. Its *.home is never published: the .home external-dns
+# leaves wildcards out.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: home-redirect
+  namespace: gateway-system
+spec:
+  parentRefs:
+    - {name: main-gateway, namespace: gateway-system, sectionName: http-home}
+  rules:
+    - filters:
+        - type: RequestRedirect
+          requestRedirect:
+            scheme: https
+            statusCode: 301

@@ -7,21 +7,11 @@ metadata:
     argocd.argoproj.io/sync-wave: "10"
 spec:
   project: default
-  sources:
-    - repoURL: https://github.com/serhii-myronets/terraform-talos-gitops-cluster.git
-      targetRevision: homelab
-      path: 03-gitops/apps/system/security/cert-manager/app
-
-    - repoURL: https://charts.jetstack.io
-      chart: cert-manager
-      targetRevision: 1.19.3
-      helm:
-        valueFiles:
-          - $values/03-gitops/apps/system/security/cert-manager/app/values.yaml
-
-    - repoURL: https://github.com/serhii-myronets/terraform-talos-gitops-cluster.git
-      targetRevision: homelab
-      ref: values
+  # The chart, lab-ca and the Gateway's certificate are in app/kustomization.yaml.
+  source:
+    repoURL: https://github.com/serhii-myronets/terraform-talos-gitops-cluster.git
+    targetRevision: homelab
+    path: 03-gitops/apps/system/security/cert-manager/app
   destination:
     server: https://kubernetes.default.svc
     namespace: cert-manager
@@ -29,3 +19,11 @@ spec:
     automated: {}
     syncOptions:
       - CreateNamespace=true
+      # The CRDs are too large for a client-side apply's annotation, and were
+      # first applied server-side by 02-bootstrap's prepare hook.
+      - ServerSideApply=true
+    # The issuer and the certificate need cert-manager's webhook, which the
+    # first sync is still starting.
+    retry:
+      limit: 5
+      backoff: {duration: 20s, factor: 2, maxDuration: 3m}

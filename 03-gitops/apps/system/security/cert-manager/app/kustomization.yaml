@@ -1,0 +1,14 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+# No namespace here: the chart goes to cert-manager, the certificate to
+# gateway-system beside the Gateway that presents it.
+resources:
+  - lab-ca.yaml
+  - certificate.yaml
+helmCharts:
+  - name: cert-manager
+    repo: https://charts.jetstack.io
+    version: v1.21.2
+    releaseName: cert-manager
+    namespace: cert-manager
+    valuesFile: values.yaml

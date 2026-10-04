@@ -4,19 +4,45 @@ metadata:
   name: main-gateway
   namespace: gateway-system
   annotations:
-    # The lab's tunnel: external-dns points every published name here.
+    # The lab's tunnel: the Cloudflare external-dns points every published
+    # serhii.link name here. The .home one reads its own annotation prefix and
+    # answers with the Gateway's address instead.
     external-dns.kubernetes.io/target: 62ed916d-9072-479d-aa94-263edf64f262.cfargotunnel.com
 spec:
   gatewayClassName: cilium
+  # The listeners are core's (core/03-gitops/apps/system/network/gateway-system
+  # in the homelab repository), less its two exceptions, ca.home and tv.home.
   listeners:
     # What arrives through the tunnel: cloudflared speaks plain HTTP, and
     # Cloudflare holds the certificate for serhii.link at its edge. A named
-    # listener, so a LAN listener added later keeps its own names - see
+    # hostname keeps local names off it - see
     # a-nameless-http-listener-swallows-the-local-names in the homelab traps.
-    - name: public
+    - name: http
       protocol: HTTP
       port: 80
       hostname: "*.serhii.link"
+      allowedRoutes:
+        namespaces:
+          from: All
+    # Local names typed without a scheme land here and are sent to HTTPS.
+    # Only this namespace may attach, so a service route cannot take a name
+    # off the redirect by matching its hostname exactly.
+    - name: http-home
+      protocol: HTTP
+      port: 80
+      hostname: "*.home"
+      allowedRoutes:
+        namespaces:
+          from: Same
+    # Local names, with the certificate lab-ca issues (cert-manager's
+    # home-tls).
+    - name: https
+      protocol: HTTPS
+      port: 443
+      hostname: "*.home"
+      tls:
+        certificateRefs:
+          - {name: home-tls}
       allowedRoutes:
         namespaces:
           from: All
