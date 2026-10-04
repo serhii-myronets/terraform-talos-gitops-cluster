@@ -11,3 +11,5 @@ vault-init.json
 .claude
 *.tfvars
 !*.tfvars.example
+# Charts kustomize pulls for helmCharts while rendering locally
+03-gitops/**/charts/
