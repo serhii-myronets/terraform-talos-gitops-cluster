@@ -1,0 +1,30 @@
+# As core's (core/03-gitops/apps/system/network/external-dns in the homelab
+# repository), with its own owner ID.
+provider:
+  name: cloudflare
+
+env:
+  - name: CF_API_TOKEN
+    valueFrom:
+      secretKeyRef: {name: cloudflare-api-token, key: CF_API_TOKEN}
+
+# Records come from HTTPRoutes only. The Gateway carries the lab's tunnel as
+# its target (external-dns.kubernetes.io/target, without "alpha" - see
+# external-dns-target-annotation-lost-alpha in the homelab traps), and only
+# names under serhii.link are published.
+sources:
+  - gateway-httproute
+domainFilters:
+  - serhii.link
+extraArgs:
+  - --cloudflare-proxied
+
+# Each cluster owns only the records it created: core's are owned by
+# `beelink` and left alone, and a name core already holds is skipped here.
+registry: txt
+txtOwnerId: lab
+policy: sync
+
+resources:
+  requests: {cpu: 10m, memory: 32Mi}
+  limits: {memory: 128Mi}

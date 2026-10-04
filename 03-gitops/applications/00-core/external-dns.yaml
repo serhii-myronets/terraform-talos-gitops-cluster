@@ -1,0 +1,34 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: external-dns
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+spec:
+  project: core
+  sources:
+    # Its Cloudflare token
+    - repoURL: https://github.com/serhii-myronets/terraform-talos-gitops-cluster.git
+      targetRevision: homelab
+      path: 03-gitops/components/00-core/external-dns
+      directory:
+        exclude: values.yaml
+
+    - repoURL: https://kubernetes-sigs.github.io/external-dns/
+      chart: external-dns
+      targetRevision: 1.23.0
+      helm:
+        valueFiles:
+          - $values/03-gitops/components/00-core/external-dns/values.yaml
+
+    - repoURL: https://github.com/serhii-myronets/terraform-talos-gitops-cluster.git
+      targetRevision: homelab
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: external-dns
+  syncPolicy:
+    automated: {}
+    syncOptions:
+      - CreateNamespace=true

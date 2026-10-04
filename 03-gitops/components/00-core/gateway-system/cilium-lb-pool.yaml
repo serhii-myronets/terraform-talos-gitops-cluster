@@ -1,8 +1,10 @@
-apiVersion: cilium.io/v2alpha1
+apiVersion: cilium.io/v2
 kind: CiliumLoadBalancerIPPool
 metadata:
   name: external
 spec:
+  # In the lab's block on the LAN (.30-.50), clear of the host, the nodes and
+  # the API VIP; the router's DHCP pool starts at .100.
   blocks:
-    - start: 10.1.1.80
-      stop: 10.1.1.85
+    - start: 192.168.8.31
+      stop: 192.168.8.35

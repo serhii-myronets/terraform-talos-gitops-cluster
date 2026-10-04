@@ -7,21 +7,10 @@ metadata:
     argocd.argoproj.io/sync-wave: "5"
 spec:
   project: core
-  sources:
-    - repoURL: https://github.com/serhii-myronets/terraform-talos-gitops-cluster.git
-      targetRevision: homelab
-      path: 03-gitops/components/00-core/cloudflared
-
-    - repoURL: https://community-charts.github.io/helm-charts
-      chart: cloudflared
-      targetRevision: 2.2.6
-      helm:
-        valueFiles:
-          - $values/03-gitops/components/00-core/cloudflared/values.yaml
-
-    - repoURL: https://github.com/serhii-myronets/terraform-talos-gitops-cluster.git
-      targetRevision: homelab
-      ref: values
+  source:
+    repoURL: https://github.com/serhii-myronets/terraform-talos-gitops-cluster.git
+    targetRevision: homelab
+    path: 03-gitops/components/00-core/cloudflared
   destination:
     server: https://kubernetes.default.svc
     namespace: cloudflared

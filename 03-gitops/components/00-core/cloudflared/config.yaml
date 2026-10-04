@@ -1,0 +1,13 @@
+# The lab's own locally managed tunnel, `lab`: its routing lives here, not in
+# the dashboard. Every name reaches the Gateway, whose HTTPRoutes decide the
+# backend; which names reach this tunnel at all is decided by the DNS records
+# the lab's external-dns creates for those routes. Core runs its own tunnel,
+# `beelink`, for its own names.
+tunnel: 62ed916d-9072-479d-aa94-263edf64f262
+credentials-file: /etc/cloudflared/credentials/credentials.json
+metrics: 0.0.0.0:2000
+no-autoupdate: true
+ingress:
+  - hostname: "*.serhii.link"
+    service: http://cilium-gateway-main-gateway.gateway-system.svc.cluster.local:80
+  - service: http_status:404

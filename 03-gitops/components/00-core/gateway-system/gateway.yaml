@@ -3,12 +3,20 @@ kind: Gateway
 metadata:
   name: main-gateway
   namespace: gateway-system
+  annotations:
+    # The lab's tunnel: external-dns points every published name here.
+    external-dns.kubernetes.io/target: 62ed916d-9072-479d-aa94-263edf64f262.cfargotunnel.com
 spec:
   gatewayClassName: cilium
   listeners:
-    - name: http
+    # What arrives through the tunnel: cloudflared speaks plain HTTP, and
+    # Cloudflare holds the certificate for serhii.link at its edge. A named
+    # listener, so a LAN listener added later keeps its own names - see
+    # a-nameless-http-listener-swallows-the-local-names in the homelab traps.
+    - name: public
       protocol: HTTP
       port: 80
+      hostname: "*.serhii.link"
       allowedRoutes:
         namespaces:
           from: All
