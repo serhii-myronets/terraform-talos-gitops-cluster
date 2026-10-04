@@ -61,10 +61,10 @@ applications:                       # 03-gitops/apps/kustomization.yaml - decisi
     - system/security/external-secrets
     - system/security/cert-manager       # v1.21.2
     - system/platform/argocd             # its route only; Argo CD is 02-bootstrap's
+    - system/platform/metrics-server     # chart 3.14.0
   waiting_for_review:
     - system/storage/openebs
     - system/storage/minio
-    - system/platform/metrics-server
     - system/platform/postgresql
     - system/platform/strimzi
     - system/observability/fluent-bit

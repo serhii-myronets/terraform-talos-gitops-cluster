@@ -1,2 +1,14 @@
+# As core's (core/03-gitops/apps/system/platform/metrics-server.yaml in the
+# homelab repository).
+
+# Talos's kubelets serve a self-signed certificate.
 args:
   - --kubelet-insecure-tls
+
+resources:
+  requests:
+    cpu: 20m
+    memory: 64Mi
+  limits:
+    cpu: 100m
+    memory: 128Mi
