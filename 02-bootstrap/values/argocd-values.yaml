@@ -6,11 +6,14 @@ crds:
   install: true
   keep: true
 
-# Login as admin, with the password in the secret argocd-initial-admin-secret.
-# Anonymous admin access is off: the UI has had a public route.
+# Anonymous admin, no login: a lab. Its public route is behind Cloudflare
+# Access, and the rest of it answers on the LAN only.
 configs:
   cm:
     kustomize.buildOptions: "--enable-helm"
+    users.anonymous.enabled: "true"
+  rbac:
+    policy.default: role:admin
 
 # TLS ends at the Cilium Gateway.
 server:

@@ -3,12 +3,14 @@ resources:
   # needs v1.6.1 or newer - cilium-gateway-api-needs-v1-6-crds in the homelab
   # traps.
   - https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.2/standard-install.yaml
-  # The CRDs of applications in 03-gitops, until each chart installs its own.
+  # The CRDs of applications in 03-gitops whose charts are set not to install
+  # them (installCRDs: false), until each chart installs its own.
   - https://raw.githubusercontent.com/external-secrets/external-secrets/v2.0.0/deploy/crds/bundle.yaml
-  - https://github.com/prometheus-operator/prometheus-operator/releases/download/v0.89.0/stripped-down-crds.yaml
-  - https://github.com/strimzi/strimzi-kafka-operator/releases/download/0.50.0/strimzi-crds-0.50.0.yaml
   - https://github.com/jetstack/cert-manager/releases/download/v1.19.3/cert-manager.crds.yaml
-  - https://raw.githubusercontent.com/VictoriaMetrics/helm-charts/master/charts/victoria-metrics-operator/charts/crds/crds/crd.yaml
+  # Off until the applications that use them are kept in 03-gitops.
+  # - https://github.com/prometheus-operator/prometheus-operator/releases/download/v0.89.0/stripped-down-crds.yaml
+  # - https://github.com/strimzi/strimzi-kafka-operator/releases/download/0.50.0/strimzi-crds-0.50.0.yaml
+  # - https://raw.githubusercontent.com/VictoriaMetrics/helm-charts/master/charts/victoria-metrics-operator/charts/crds/crds/crd.yaml
   # The Infisical credential External Secrets reads, in the namespace the
   # ClusterSecretStore names. Ignored by Git; see initial-secret.yaml.example.
   - initial-secret.yaml
