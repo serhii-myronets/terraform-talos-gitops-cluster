@@ -32,8 +32,8 @@ One Proxmox host on the home LAN, `192.168.8.0/24`:
 ```text
 Proxmox VE (192.168.8.30)
 └── vmbr0
-    ├── lab-controlplane-1..3: 192.168.8.40-42
-    ├── lab-worker-1..2:       192.168.8.45-46
+    ├── controlplane-1..3: 192.168.8.40-42
+    ├── worker-1..2:       192.168.8.45-46
     └── Kubernetes API VIP:    192.168.8.50
 ```
 

@@ -18,8 +18,8 @@ Terraform that builds the lab's Talos cluster on the Proxmox host: the VMs, each
 | | Address | vCPU | RAM | Disks |
 |---|---|---|---|---|
 | Kubernetes API (VIP) | 192.168.8.50 | | | |
-| `lab-controlplane-1..3` | .40-.42 | 4 | 4 GB | 20 GB |
-| `lab-worker-1..2` | .45-.46 | 8 | 18 GB | 40 GB + 100 GB at `/var/mnt/storage` |
+| `controlplane-1..3` | .40-.42 | 4 | 4 GB | 20 GB |
+| `worker-1..2` | .45-.46 | 8 | 18 GB | 40 GB + 100 GB at `/var/mnt/storage` |
 
 Talos v1.14.1 and Kubernetes v1.37.0, the versions core runs. The VMs' disks are on `local-zfs`, imported from the Image Factory's qcow2 image with the `qemu-guest-agent` extension. Each node's address, gateway and resolver come from Proxmox's cloud-init drive.
 

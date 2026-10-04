@@ -35,16 +35,16 @@ locals {
   }
 
   nodes = {
-    "lab-controlplane-1" = { role = "controlplane", ip = "192.168.8.40", vm_id = 140 }
-    "lab-controlplane-2" = { role = "controlplane", ip = "192.168.8.41", vm_id = 141 }
-    "lab-controlplane-3" = { role = "controlplane", ip = "192.168.8.42", vm_id = 142 }
-    "lab-worker-1"       = { role = "worker", ip = "192.168.8.45", vm_id = 145 }
-    "lab-worker-2"       = { role = "worker", ip = "192.168.8.46", vm_id = 146 }
+    "controlplane-1" = { role = "controlplane", ip = "192.168.8.40", vm_id = 140 }
+    "controlplane-2" = { role = "controlplane", ip = "192.168.8.41", vm_id = 141 }
+    "controlplane-3" = { role = "controlplane", ip = "192.168.8.42", vm_id = 142 }
+    "worker-1"       = { role = "worker", ip = "192.168.8.45", vm_id = 145 }
+    "worker-2"       = { role = "worker", ip = "192.168.8.46", vm_id = 146 }
   }
 
   controlplanes = { for name, node in local.nodes : name => node if node.role == "controlplane" }
   workers       = { for name, node in local.nodes : name => node if node.role == "worker" }
 
   # The first control plane bootstraps etcd and answers before the VIP exists.
-  first_controlplane = local.nodes["lab-controlplane-1"].ip
+  first_controlplane = local.nodes["controlplane-1"].ip
 }
