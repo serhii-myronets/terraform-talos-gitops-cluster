@@ -45,13 +45,15 @@ terraform init
 terraform plan -out=lab.plan
 terraform apply lab.plan
 
-# Add the lab beside core's contexts rather than over them: merge the Talos
-# configuration, then let talosctl merge the kubeconfig.
+# The lab's contexts, beside core's: the apply prints these as the output
+# `connect`, and `terraform output -raw connect` prints them again.
+talosctl config remove lab -y
 f=$(mktemp) && terraform output -raw talosconfig > "$f" && talosctl config merge "$f"; rm -f "$f"
-talosctl --context lab -n 192.168.8.40 kubeconfig
+talosctl --context lab -n 192.168.8.40 kubeconfig --force
+kubectl --context admin@lab get nodes
 ```
 
-The Talos context is `lab` and the Kubernetes context `admin@lab`; `talosctl config merge` makes `lab` the current Talos context, `talosctl config context <name>` switches back. Nodes stay `NotReady` until Cilium is installed in 02-bootstrap.
+The Talos context is `lab` and the Kubernetes context `admin@lab`. A rebuilt cluster has new certificates, so its contexts replace the old ones: `config remove` first, since `config merge` would add the new one beside as `lab-1`, and `--force`, which overwrites `admin@lab` in `~/.kube/config` and leaves core's contexts alone. On a first build `config remove` finds nothing and says so. `talosctl config merge` makes `lab` the current Talos context, `talosctl config context <name>` switches back. Nodes stay `NotReady` until Cilium is installed in 02-bootstrap.
 
 ## Upgrades
 

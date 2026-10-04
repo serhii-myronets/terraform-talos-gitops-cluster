@@ -34,10 +34,14 @@ resource "proxmox_virtual_environment_vm" "node" {
     type  = "host"
   }
 
-  # Fixed, no ballooning: the host's memory is planned in locals.tf.
+  # Fixed, no ballooning: the host's memory is planned in locals.tf. The
+  # balloon device stays, its minimum equal to the memory, so it never
+  # takes any back but reports the guest's own use; without it Proxmox
+  # shows the QEMU process's, near 100% once the guest's page cache fills.
+  # Adding the device needs a stop and start of the VM, not a guest reboot.
   memory {
     dedicated = local.sizes[each.value.role].memory
-    floating  = 0
+    floating  = local.sizes[each.value.role].memory
   }
 
   network_device {
