@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: observability
+  labels:
+    # node-exporter reads the host's /proc, /sys and root filesystem, and
+    # vlagent every pod's log under /var/log - more than the restricted
+    # policy allows.
+    pod-security.kubernetes.io/enforce: privileged

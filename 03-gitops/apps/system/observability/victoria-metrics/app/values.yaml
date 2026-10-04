@@ -1,0 +1,137 @@
+# The lab's half of the house's one observability stack (docs/decisions/0008).
+# The stores, Grafana and the alerts run on core; here run only what collects:
+# the operator, vmagent for metrics, vlagent for logs, kube-state-metrics and
+# node-exporter. Both agents write to core through https://ingest.home, where
+# core's vmauth lets in writes only, with the lab's token. Every series and
+# every log line carries cluster=lab, which core's dashboards and rules group
+# by.
+#
+# Same chart and version as core's (core/03-gitops/apps/system/observability
+# in the homelab repository); the comments there explain the settings marked
+# "as core's".
+
+global:
+  clusterLabel: cluster
+
+# As core's: every name the operator builds starts from this.
+fullnameOverride: vm
+
+victoria-metrics-operator:
+  # As core's, and for this very reason: the chart mints the webhook's
+  # certificate authority while it renders, and Argo CD renders without a
+  # cluster, so every sync would push a new one.
+  admissionWebhooks:
+    enabled: false
+  crds:
+    # A Helm pre-delete hook. Rendered by Kustomize it would be an ordinary
+    # Job, run on every sync.
+    cleanup:
+      enabled: false
+  resources:
+    requests: {cpu: 25m, memory: 96Mi}
+    limits: {memory: 256Mi}
+
+# Where the agents write: core. The token and home-ca's root certificate come
+# from the Secret ingest (externalsecret.yaml); the chart copies each block
+# into its agent's remoteWrite as it is.
+external:
+  vm:
+    write:
+      url: https://ingest.home/api/v1/write
+      bearerTokenSecret: {name: ingest, key: token}
+      tlsConfig:
+        ca: {secret: {name: ingest, key: ca.crt}}
+  vl:
+    write:
+      url: https://ingest.home/insert/native
+      bearerTokenSecret: {name: ingest, key: token}
+      tlsConfig:
+        ca: {secret: {name: ingest, key: ca.crt}}
+
+vmagent:
+  spec:
+    # As core's: half the chart's rate, the largest lever on core's disk.
+    scrapeInterval: 30s
+    externalLabels:
+      cluster: lab
+    # While core is unreachable vmagent queues on this disk and sends the
+    # backlog when it is back; without a volume the queue lives in the pod
+    # and dies with it.
+    storage:
+      storageClassName: proxmox-zfs
+      resources:
+        requests: {storage: 5Gi}
+    resources:
+      requests: {cpu: 50m, memory: 128Mi}
+      limits: {memory: 384Mi}
+
+vlagent:
+  enabled: true
+  spec:
+    # Every pod's log, from every node: a DaemonSet.
+    k8sCollector:
+      enabled: true
+      # Logs have no external labels; this field is their cluster label.
+      extraFields: '{"cluster":"lab"}'
+    resources:
+      requests: {cpu: 25m, memory: 64Mi}
+      limits: {memory: 256Mi}
+
+# On core, not here.
+vmsingle:
+  enabled: false
+vmalert:
+  enabled: false
+alertmanager:
+  enabled: false
+grafana:
+  enabled: false
+defaultDashboards:
+  enabled: false
+defaultDatasources:
+  enabled: false
+# Core's copies of the rules see every cluster's series, the lab's included.
+defaultRules:
+  create: false
+# The Job that fetches dashboards and rules at deploy time - for a Grafana
+# and a vmalert that run on core.
+syncJob:
+  enabled: false
+
+kube-state-metrics:
+  resources:
+    requests: {cpu: 10m, memory: 48Mi}
+    limits: {memory: 192Mi}
+
+prometheus-node-exporter:
+  resources:
+    requests: {cpu: 10m, memory: 32Mi}
+    limits: {memory: 96Mi}
+
+# As core's: Talos binds these to localhost or to etcd's own certificates,
+# so they could only ever be down.
+kubeControllerManager:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeEtcd:
+  enabled: false
+
+# As core's: the apiserver read every five minutes, its histogram buckets
+# dropped. The rules built on those buckets are off on core already.
+kubeApiServer:
+  vmScrape:
+    spec:
+      endpoints:
+        - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+          port: https
+          scheme: https
+          tlsConfig:
+            caFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+            serverName: kubernetes
+          max_scrape_size: "64MB"
+          scrape_interval: 5m
+          metricRelabelConfigs:
+            - action: drop
+              sourceLabels: [__name__]
+              regex: ".*_bucket"

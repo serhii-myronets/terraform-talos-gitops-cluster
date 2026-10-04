@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: victoria-metrics
+  namespace: argocd
+spec:
+  project: default
+  # The lab's collectors, writing to core's stores; the chart and why it is
+  # cut down to its agents are in app/values.yaml.
+  source:
+    repoURL: https://github.com/serhii-myronets/terraform-talos-gitops-cluster.git
+    targetRevision: homelab
+    path: 03-gitops/apps/system/observability/victoria-metrics/app
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: observability
+  syncPolicy:
+    automated: {}
+    syncOptions:
+      # The operator's CRDs are larger than the annotation a client-side
+      # apply keeps the last configuration in.
+      - ServerSideApply=true

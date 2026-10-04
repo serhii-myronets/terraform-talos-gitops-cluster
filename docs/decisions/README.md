@@ -19,3 +19,4 @@ docs/decisions/; these are the lab's own.
 | [0005](0005-applications-run-once-listed.md) | 03-gitops is laid out as core's, and an application runs once it is listed | accepted | argocd, gitops, layout |
 | [0006](0006-lab-ca-under-home-ca.md) | The lab's .home certificates come from lab-ca, an intermediate under home-ca limited to .home | accepted | tls, cert-manager, home-ca |
 | [0007](0007-volumes-are-proxmox-disks.md) | Persistent volumes are disks of the Proxmox host, through Proxmox CSI | accepted | storage, proxmox, csi, zfs |
+| [0008](0008-observability-writes-to-core.md) | The lab collects its metrics and logs, and core stores them | accepted | observability, victoriametrics, core |

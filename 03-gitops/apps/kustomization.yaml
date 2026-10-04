@@ -19,18 +19,11 @@ resources:
   # platform
   - system/platform/argocd/application.yaml
   - system/platform/metrics-server/application.yaml
+  # observability
+  - system/observability/victoria-metrics/application.yaml
   # Not yet reviewed:
   # - system/storage/minio/application.yaml
   # - system/platform/postgresql/application.yaml
   # - system/platform/strimzi/application.yaml
-  # - system/observability/fluent-bit/application.yaml
-  # - system/observability/grafana/application.yaml
-  # - system/observability/kube-state-metrics/application.yaml
-  # - system/observability/loki/application.yaml
-  # - system/observability/otel-operator/application.yaml
-  # - system/observability/prometheus-node-exporter/application.yaml
-  # - system/observability/tempo/application.yaml
-  # - system/observability/victoria-metrics-operator/application.yaml
-  # - system/observability/victoria-metrics-server/application.yaml
   # - services/kafka/application.yaml
   # - services/otel-demo/application.yaml
