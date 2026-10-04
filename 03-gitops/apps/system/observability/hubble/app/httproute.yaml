@@ -1,0 +1,18 @@
+# Hubble's web interface: which pods talk to which, and what Cilium dropped
+# and why. hubble.home on the LAN, with lab-ca's certificate, published to the
+# router's BIND; hubble.serhii.link through the lab's tunnel, behind
+# Cloudflare Access. The UI has no login of its own.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: hubble
+  namespace: kube-system
+spec:
+  parentRefs:
+    - {name: main-gateway, namespace: gateway-system}
+  hostnames:
+    - hubble.home
+    - hubble.serhii.link
+  rules:
+    - backendRefs:
+        - {name: hubble-ui, port: 80}

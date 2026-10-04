@@ -14,7 +14,7 @@ Everything Argo CD runs on the lab, laid out as core's `core/03-gitops/apps` is 
 │   │   ├── security/         external-secrets, cert-manager
 │   │   ├── storage/          proxmox-csi
 │   │   ├── platform/         argocd, metrics-server
-│   │   └── observability/    victoria-metrics
+│   │   └── observability/    victoria-metrics, hubble
 │   └── services/             none yet
 ```
 

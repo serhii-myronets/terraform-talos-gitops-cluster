@@ -81,6 +81,7 @@ applications:                       # 03-gitops/apps/kustomization.yaml - decisi
     - system/platform/argocd             # its route only; Argo CD is 02-bootstrap's
     - system/platform/metrics-server     # chart 3.14.0
     - system/observability/victoria-metrics  # chart 0.95.0, agents only, writing to core - decisions/0008
+    - system/observability/hubble        # its route only, hubble.home and .serhii.link; Hubble is Cilium's, in 02-bootstrap
   waiting_for_review:                # in archive/awaiting-review, outside apps/
     - minio                          # was system/storage
     - postgresql                     # was system/platform

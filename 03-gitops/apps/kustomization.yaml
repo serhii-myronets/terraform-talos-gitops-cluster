@@ -22,3 +22,4 @@ resources:
   - system/platform/metrics-server/application.yaml
   # observability
   - system/observability/victoria-metrics/application.yaml
+  - system/observability/hubble/application.yaml

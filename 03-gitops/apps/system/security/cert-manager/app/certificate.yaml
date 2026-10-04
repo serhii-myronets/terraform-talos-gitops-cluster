@@ -16,6 +16,7 @@ spec:
     name: lab-ca
   dnsNames:
     - argocd.home
+    - hubble.home
   duration: 8760h
   renewBefore: 720h
   privateKey:

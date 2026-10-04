@@ -1,0 +1,19 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: hubble
+  namespace: argocd
+spec:
+  project: default
+  # Only the way in to Hubble's UI. Hubble itself - the relay and the UI -
+  # is part of Cilium, 02-bootstrap's Helm release; one release cannot have
+  # two owners, so its switch stays in 02-bootstrap's cilium-values.yaml.
+  source:
+    repoURL: https://github.com/serhii-myronets/terraform-talos-gitops-cluster.git
+    targetRevision: homelab
+    path: 03-gitops/apps/system/observability/hubble/app
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kube-system
+  syncPolicy:
+    automated: {}
