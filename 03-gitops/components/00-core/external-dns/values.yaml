@@ -19,8 +19,8 @@ domainFilters:
 extraArgs:
   - --cloudflare-proxied
 
-# Each cluster owns only the records it created: core's are owned by
-# `beelink` and left alone, and a name core already holds is skipped here.
+# Each cluster owns only the records it created: core's are owned by `core`
+# and left alone, and a name core already holds is skipped here.
 registry: txt
 txtOwnerId: lab
 policy: sync
