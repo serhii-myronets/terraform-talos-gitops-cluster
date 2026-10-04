@@ -50,8 +50,10 @@ move to an ApplicationSet was weighed: worth it for one template instead of
 22 Applications, but the list suits a review better; Helm values are to move
 into each app's kustomization.yaml as it is reviewed, which makes either easy.
 
+external-dns was the first moved: both its charts render from helmCharts in
+its kustomization.yaml, the same objects as before.
+
 Still open:
-- external-dns' two charts into helmCharts in its kustomization.yaml.
 - cert-manager next, and with it a .home listener on the Gateway - until then
   the lab publishes no .home name.
 - The rest of the review, in apps/kustomization.yaml order.
