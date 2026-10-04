@@ -34,9 +34,18 @@ terraform {
   }
 }
 
+# Terraform's token for the Proxmox API, root@pam!terraform, from Infisical:
+# read for each run and never kept in the state (docs/decisions/0012).
+ephemeral "infisical_secret" "proxmox_api_token" {
+  workspace_id = local.infisical.project_id
+  env_slug     = "prod"
+  folder_path  = "/system/proxmox"
+  name         = "API_TOKEN"
+}
+
 provider "proxmox" {
   endpoint  = local.proxmox.endpoint
-  api_token = var.proxmox_api_token
+  api_token = ephemeral.infisical_secret.proxmox_api_token.value
   insecure  = true # the host's self-signed certificate
 }
 

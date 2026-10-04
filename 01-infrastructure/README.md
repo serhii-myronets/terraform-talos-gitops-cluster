@@ -12,8 +12,7 @@ Terraform that builds the lab's Talos cluster on the Proxmox host: the VMs, each
 | [`clients.tf`](./clients.tf) | talosconfig and kubeconfig: into Infisical, and the contexts on this Mac |
 | [`scripts/contexts.sh`](./scripts/contexts.sh) | adds or removes one cluster's contexts in `~/.talos/config` and `~/.kube/config` |
 | [`patches/`](./patches/) | Talos configuration documents for every node and for each role |
-| [`providers.tf`](./providers.tf) | providers, and the state in R2 |
-| [`variables.tf`](./variables.tf) | the Proxmox API token, the one input not in Git |
+| [`providers.tf`](./providers.tf) | providers, the Proxmox token from Infisical, and the state in R2 |
 
 ## The cluster
 
@@ -30,14 +29,10 @@ The patches use the v1.14 configuration contract, where each part of the configu
 ## Before the first run
 
 - The `r2` profile in `~/.aws/credentials`, as core uses: see `core/01-talos/README.md` in the homelab repository.
-- `proxmox.auto.tfvars`, ignored by Git, with a token from the Proxmox host:
+- A token for the Proxmox API in Infisical, `proxmox-lab` `/system/proxmox/API_TOKEN`, as `root@pam!terraform=<secret>` ([decisions/0012](../docs/decisions/0012-the-proxmox-token-is-in-infisical.md)) - made on the host with:
 
   ```bash
   pveum user token add root@pam terraform --privsep 0
-  ```
-
-  ```hcl
-  proxmox_api_token = "root@pam!terraform=<secret>"
   ```
 - An Infisical CLI session, `infisical login`, and the `terraform` function that hands it to Terraform (below).
 
