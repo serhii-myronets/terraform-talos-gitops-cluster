@@ -52,8 +52,8 @@ session that do not belong in a public repository. Read it first.
 
 **Reply to Serhii in Ukrainian; write the repository in English.**
 
-**Never print a secret.** `terraform.tfvars`, `initial-secret.yaml`,
-Terraform state and Talos configs hold credentials. Read values into
+**Never print a secret.** `proxmox.auto.tfvars`, Terraform state, Talos
+configs and kubeconfigs hold credentials. Read values into
 variables, filter `password|secret|token|key` from output, and never put a
 credential in a tracked file. This repository is public.
 

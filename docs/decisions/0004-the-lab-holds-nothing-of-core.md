@@ -20,9 +20,8 @@ Now everything the lab holds is its own:
 - Infisical project `proxmox-lab`, environment `prod`, keys laid out as
   core's are (`/system/<component>/UPPER_SNAKE`), read by the machine
   identity `lab`, which has no access to core's project or the organization.
-  Its credential is `02-bootstrap/prepare-hook/initial-secret.yaml`, ignored
-  by Git, with a copy in the project at `/system/infisical` for a rebuild
-  from another machine, as core keeps its own.
+  It logs in with the lab cluster's own ServiceAccount token, and no
+  credential is placed by hand (decisions/0011).
 - The Cloudflare tunnel `lab`, beside core's `beelink`, and its own DNS
   token.
 - A TSIG key `lab` for the router's BIND, and external-dns owner `lab` in

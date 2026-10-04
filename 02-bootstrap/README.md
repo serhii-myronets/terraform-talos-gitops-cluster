@@ -12,15 +12,13 @@ Every command is pinned to the kubeconfig context `admin@lab`, hooks included, s
 
 ## What runs, in order
 
-1. **prepare hook** - `kubectl apply -k prepare-hook/ --server-side`: the Gateway API CRDs (v1.6.2, which Cilium 1.20 requires) and `initial-secret.yaml`, the Infisical credential External Secrets reads. Helmfile runs it before every command, `diff` and `lint` included; it is idempotent.
+1. **prepare hook** - `kubectl apply -k prepare-hook/ --server-side`: the Gateway API CRDs (v1.6.2, which Cilium 1.20 requires). Helmfile runs it before every command, `diff` and `lint` included; it is idempotent.
 2. **cilium** - CNI and kube-proxy replacement with BPF masquerading, Gateway API, L2 announcements, Hubble and Prometheus metrics. Its values follow core's; every container has a memory limit, so Talos's OOM controller never picks Cilium.
 3. **external-secrets** - the controller and its CRDs, before anything in 03-gitops asks for a secret; the `ClusterSecretStore` it serves is Argo CD's. Same values as core's.
 4. **argocd** - installs its own CRDs. Like Cilium and External Secrets it is upgraded here, not by itself; `03-gitops/apps/system/platform/argocd` holds only its route.
 5. **postsync hook of argocd** - `kubectl apply -f ../03-gitops/root.yaml`: the root Application, which runs every Application listed in `03-gitops/apps/kustomization.yaml`.
 
-## Before the first run
-
-`prepare-hook/initial-secret.yaml`, ignored by Git, made from [`initial-secret.yaml.example`](./prepare-hook/initial-secret.yaml.example) with the Infisical machine identity's client ID and secret.
+Nothing secret is placed by hand: External Secrets logs in to Infisical with the cluster's own ServiceAccount token, which `03-gitops/apps/system/security/external-secrets` asks Kubernetes for ([decisions/0011](../docs/decisions/0011-external-secrets-logs-in-with-the-clusters-own-token.md)).
 
 ## Run
 
