@@ -21,9 +21,8 @@ needs the VM stopped and started, and the owner took the occasion to destroy
 and apply the whole cluster.
 
 Its contexts then had to replace the old ones, whose certificates were gone
-with the cluster: `config merge` would have added `lab-1` beside. The
-commands are now the Terraform output `connect`, printed after every apply.
-The rebuild came up whole through 02-bootstrap and Argo CD without a hand
+with the cluster: `config merge` would have added `lab-1` beside. That was
+fixed for good later the same day (below). The rebuild came up whole through 02-bootstrap and Argo CD without a hand
 on it. No system extension beyond qemu-guest-agent is needed: i915 and
 intel-ucode are core's because it is bare metal.
 
@@ -39,6 +38,20 @@ before it ran - vmagent's queue volume is `statefulMode` and
 needed the control planes' taint tolerated. vmagent's 5 Gi queue was the
 first real claim on Proxmox CSI. Core's metrics are now kept a month, as
 its logs.
+
+## Secrets out of files
+
+Terraform then took Infisical as its source (0009): the lab is made from
+its Talos secrets there (0010), writes its talosconfig and kubeconfig back
+and into the Mac's standard files through scripts/contexts.sh, its
+External Secrets log in by JWT with the cluster's own ServiceAccount token
+(0011), and Terraform's Proxmox token moved there from a tfvars file (0012).
+Infisical's identities were remade as one per cluster, `core` and `lab`,
+after a search printed the old `talos-cluster` secret. The lab was
+destroyed and rebuilt to prove all of it; core was changed the same way
+(the homelab repository's 0041). The R2 keys stay in ~/.aws/credentials:
+Terraform's s3 backend takes no value from a provider, and the owner chose
+the file over a credential_process script.
 
 Still open:
 - The rest of the review: minio (MinIO's community edition is no longer
