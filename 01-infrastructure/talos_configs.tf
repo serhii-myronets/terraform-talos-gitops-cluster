@@ -15,13 +15,62 @@ data "talos_image_factory_urls" "this" {
   disk_image_format = "qcow2"
 }
 
-resource "talos_machine_secrets" "this" {}
+# The cluster's Talos secrets - its certificate authorities, the key
+# ServiceAccount tokens are signed with, etcd's encryption key - from
+# Infisical, in talosctl's secrets.yaml format. Generated once and kept there,
+# so every rebuild is the same cluster: the same CAs, talosconfig and
+# kubeconfig, and the same key Infisical checks the lab's External Secrets
+# by (docs/decisions/0010).
+data "infisical_secrets" "talos" {
+  workspace_id = local.infisical.project_id
+  env_slug     = "prod"
+  folder_path  = local.infisical.talos_path
+}
 
-data "talos_client_configuration" "this" {
-  cluster_name         = local.cluster.name
-  client_configuration = talos_machine_secrets.this.client_configuration
-  endpoints            = [for node in local.controlplanes : node.ip]
-  nodes                = [for node in local.nodes : node.ip]
+locals {
+  talos_secrets = yamldecode(data.infisical_secrets.talos.secrets["SECRETS_YAML"].value)
+
+  # secrets.yaml's names, as the Talos provider spells them.
+  machine_secrets = {
+    cluster = {
+      id     = local.talos_secrets.cluster.id
+      secret = local.talos_secrets.cluster.secret
+    }
+    secrets = {
+      bootstrap_token             = local.talos_secrets.secrets.bootstraptoken
+      secretbox_encryption_secret = local.talos_secrets.secrets.secretboxencryptionsecret
+      aescbc_encryption_secret    = try(local.talos_secrets.secrets.aescbcencryptionsecret, null)
+    }
+    trustdinfo = {
+      token = local.talos_secrets.trustdinfo.token
+    }
+    certs = {
+      etcd               = { cert = local.talos_secrets.certs.etcd.crt, key = local.talos_secrets.certs.etcd.key }
+      k8s                = { cert = local.talos_secrets.certs.k8s.crt, key = local.talos_secrets.certs.k8s.key }
+      k8s_aggregator     = { cert = local.talos_secrets.certs.k8saggregator.crt, key = local.talos_secrets.certs.k8saggregator.key }
+      k8s_serviceaccount = { key = local.talos_secrets.certs.k8sserviceaccount.key }
+      os                 = { cert = local.talos_secrets.certs.os.crt, key = local.talos_secrets.certs.os.key }
+    }
+  }
+}
+
+# The admin's Talos client configuration, made from the secrets on each run
+# and never stored: its certificate is valid as long as the OS CA, until
+# 2036, and comes out the same every time.
+ephemeral "talos_client_configuration" "this" {
+  cluster_name    = local.cluster.name
+  machine_secrets = local.machine_secrets
+  endpoints       = [for node in local.controlplanes : node.ip]
+  nodes           = [for node in local.nodes : node.ip]
+}
+
+# Until 2026-10-04 Terraform generated the secrets itself, and a rebuild made
+# a new cluster. Forgotten, not destroyed: what it held is in Infisical now.
+removed {
+  from = talos_machine_secrets.this
+  lifecycle {
+    destroy = false
+  }
 }
 
 # Each node's configuration: the patches for every node and for its role, then
@@ -32,7 +81,7 @@ data "talos_machine_configuration" "node" {
   cluster_name       = local.cluster.name
   cluster_endpoint   = local.cluster.endpoint
   machine_type       = each.value.role
-  machine_secrets    = talos_machine_secrets.this.machine_secrets
+  machine_secrets    = local.machine_secrets
   talos_version      = local.talos_contract
   kubernetes_version = local.kubernetes_version
 
@@ -83,7 +132,7 @@ data "talos_machine_configuration" "node" {
 ephemeral "talos_cluster_kubeconfig" "drain" {
   cluster_name    = local.cluster.name
   endpoint        = local.cluster.endpoint
-  machine_secrets = talos_machine_secrets.this.machine_secrets
+  machine_secrets = local.machine_secrets
 }
 
 # A node's configuration, and its Talos version: a changed installer image
@@ -95,7 +144,7 @@ resource "talos_machine" "controlplane" {
   depends_on = [proxmox_virtual_environment_vm.node]
 
   node                            = each.value.ip
-  client_configuration            = talos_machine_secrets.this.client_configuration
+  client_configuration_wo         = ephemeral.talos_client_configuration.this.client_configuration
   machine_configuration           = data.talos_machine_configuration.node[each.key].machine_configuration
   image                           = data.talos_image_factory_urls.this.urls.installer
   kubeconfig_wo                   = ephemeral.talos_cluster_kubeconfig.drain.kubeconfig_raw
@@ -107,10 +156,10 @@ resource "talos_machine" "controlplane" {
 resource "talos_cluster" "this" {
   depends_on = [talos_machine.controlplane]
 
-  node                 = local.first_controlplane
-  control_plane_nodes  = [for node in local.controlplanes : node.ip]
-  client_configuration = talos_machine_secrets.this.client_configuration
-  kubernetes_version   = local.kubernetes_version
+  node                    = local.first_controlplane
+  control_plane_nodes     = [for node in local.controlplanes : node.ip]
+  client_configuration_wo = ephemeral.talos_client_configuration.this.client_configuration
+  kubernetes_version      = local.kubernetes_version
 }
 
 resource "talos_machine" "worker" {
@@ -118,16 +167,18 @@ resource "talos_machine" "worker" {
   depends_on = [talos_cluster.this]
 
   node                            = each.value.ip
-  client_configuration            = talos_machine_secrets.this.client_configuration
+  client_configuration_wo         = ephemeral.talos_client_configuration.this.client_configuration
   machine_configuration           = data.talos_machine_configuration.node[each.key].machine_configuration
   image                           = data.talos_image_factory_urls.this.urls.installer
   kubeconfig_wo                   = ephemeral.talos_cluster_kubeconfig.drain.kubeconfig_raw
   ignore_kubernetes_upgrade_drift = true
 }
 
-resource "talos_cluster_kubeconfig" "this" {
-  depends_on = [talos_cluster.this]
-
-  node                 = local.first_controlplane
-  client_configuration = talos_machine_secrets.this.client_configuration
+# The kubeconfig came from the running cluster until 2026-10-04; it is made
+# from the secrets now (clients.tf).
+removed {
+  from = talos_cluster_kubeconfig.this
+  lifecycle {
+    destroy = false
+  }
 }

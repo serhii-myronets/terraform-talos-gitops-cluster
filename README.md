@@ -64,10 +64,8 @@ Follow the stage-specific README files in order:
 ```bash
 # Run from 01-infrastructure
 terraform init
-terraform apply
-# Merged beside existing contexts - see 01-infrastructure/README.md
-f=$(mktemp) && terraform output -raw talosconfig > "$f" && talosctl config merge "$f"; rm -f "$f"
-talosctl --context lab -n 192.168.8.40 kubeconfig
+terraform plan -out=lab.plan && terraform apply lab.plan
+# The contexts lab and admin@lab are now in ~/.talos/config and ~/.kube/config
 
 # Then bootstrap: Cilium, External Secrets, Argo CD, and the root Application
 cd ../02-bootstrap

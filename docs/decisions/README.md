@@ -21,3 +21,4 @@ docs/decisions/; these are the lab's own.
 | [0007](0007-volumes-are-proxmox-disks.md) | Persistent volumes are disks of the Proxmox host, through Proxmox CSI | accepted | storage, proxmox, csi, zfs |
 | [0008](0008-observability-writes-to-core.md) | The lab collects its metrics and logs, and core stores them | accepted | observability, victoriametrics, core |
 | [0009](0009-terraform-logs-in-to-infisical-as-the-owner.md) | Terraform logs in to Infisical as the owner, with the CLI's session token | accepted | terraform, infisical, identity |
+| [0010](0010-the-lab-is-made-from-secrets-in-infisical.md) | The lab is made from Talos secrets kept in Infisical, and writes its client configurations back | accepted | talos, terraform, infisical, secrets |

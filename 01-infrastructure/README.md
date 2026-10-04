@@ -8,7 +8,9 @@ Terraform that builds the lab's Talos cluster on the Proxmox host: the VMs, each
 |---|---|
 | [`locals.tf`](./locals.tf) | everything that is set: Proxmox, the network, versions, VM sizes, the nodes |
 | [`proxmox_nodes.tf`](./proxmox_nodes.tf) | the Talos image and the VMs |
-| [`talos_configs.tf`](./talos_configs.tf) | the image schematic, machine configurations, `talos_machine` and `talos_cluster` |
+| [`talos_configs.tf`](./talos_configs.tf) | the image schematic, the Talos secrets from Infisical, machine configurations, `talos_machine` and `talos_cluster` |
+| [`clients.tf`](./clients.tf) | talosconfig and kubeconfig: into Infisical, and the contexts on this Mac |
+| [`scripts/contexts.sh`](./scripts/contexts.sh) | adds or removes one cluster's contexts in `~/.talos/config` and `~/.kube/config` |
 | [`patches/`](./patches/) | Talos configuration documents for every node and for each role |
 | [`providers.tf`](./providers.tf) | providers, and the state in R2 |
 | [`variables.tf`](./variables.tf) | the Proxmox API token, the one input not in Git |
@@ -56,15 +58,25 @@ terraform init
 terraform plan -out=lab.plan
 terraform apply lab.plan
 
-# The lab's contexts, beside core's: the apply prints these as the output
-# `connect`, and `terraform output -raw connect` prints them again.
-talosctl config remove lab -y
-f=$(mktemp) && terraform output -raw talosconfig > "$f" && talosctl config merge "$f"; rm -f "$f"
-talosctl --context lab -n 192.168.8.40 kubeconfig --force
 kubectl --context admin@lab get nodes
 ```
 
-The Talos context is `lab` and the Kubernetes context `admin@lab`. A rebuilt cluster has new certificates, so its contexts replace the old ones: `config remove` first, since `config merge` would add the new one beside as `lab-1`, and `--force`, which overwrites `admin@lab` in `~/.kube/config` and leaves core's contexts alone. On a first build `config remove` finds nothing and says so. `talosctl config merge` makes `lab` the current Talos context, `talosctl config context <name>` switches back. Nodes stay `NotReady` until Cilium is installed in 02-bootstrap.
+Nodes stay `NotReady` until Cilium is installed in 02-bootstrap.
+
+## Secrets and contexts
+
+The cluster is made from **Talos secrets kept in Infisical**, `proxmox-lab` `/system/talos/SECRETS_YAML` in talosctl's `secrets.yaml` format ([decisions/0010](../docs/decisions/0010-the-lab-is-made-from-secrets-in-infisical.md)). They were placed there once; Terraform only reads them, so a destroy and an apply bring back the same cluster - the same certificate authorities, the same key ServiceAccount tokens are signed with.
+
+From them, on every run and never stored in the state, Terraform makes the admin's talosconfig and kubeconfig, valid as long as their CAs. After an apply it writes them beside the secrets, as `TALOSCONFIG` and `KUBECONFIG`, and merges them into this Mac's `~/.talos/config` and `~/.kube/config` as the contexts `lab` and `admin@lab`, replacing the lab's and leaving core's and which context is current alone. A destroy takes them out of both places.
+
+On another machine, after `infisical login`:
+
+```bash
+terraform plan -replace=terraform_data.contexts -out=contexts.plan
+terraform apply contexts.plan
+```
+
+or, without Terraform, `scripts/contexts.sh add lab 31407031-ddd9-4d01-aaa4-b9a791c73504 /system/talos`.
 
 ## Upgrades
 

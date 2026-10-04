@@ -19,6 +19,14 @@ locals {
     endpoint = "https://192.168.8.50:6443"
   }
 
+  # The lab's Infisical project, proxmox-lab. Under talos_path: SECRETS_YAML,
+  # the Talos secrets every rebuild is made from, placed there once; and
+  # TALOSCONFIG and KUBECONFIG, which Terraform writes back.
+  infisical = {
+    project_id = "31407031-ddd9-4d01-aaa4-b9a791c73504"
+    talos_path = "/system/talos"
+  }
+
   # Kept on core's versions, so the lab rehearses what core runs. talos_contract
   # is the configuration schema the machine configuration is generated against:
   # pinned to the version the cluster was created with, and moved on purpose,
