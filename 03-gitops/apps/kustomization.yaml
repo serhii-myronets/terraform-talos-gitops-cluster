@@ -14,6 +14,8 @@ resources:
   # security
   - system/security/external-secrets/application.yaml
   - system/security/cert-manager/application.yaml
+  # storage
+  - system/storage/proxmox-csi/application.yaml
   # platform
   - system/platform/argocd/application.yaml
   - system/platform/metrics-server/application.yaml

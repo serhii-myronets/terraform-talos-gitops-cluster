@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: proxmox-csi
+  namespace: argocd
+  annotations:
+    # Storage before anything that claims it.
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  project: default
+  # The chart, its connection and its StorageClasses are in app/.
+  source:
+    repoURL: https://github.com/serhii-myronets/terraform-talos-gitops-cluster.git
+    targetRevision: homelab
+    path: 03-gitops/apps/system/storage/proxmox-csi/app
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: csi-proxmox
+  syncPolicy:
+    automated: {}

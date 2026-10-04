@@ -1,0 +1,8 @@
+# The node plugin mounts the attached disks on the host, so it runs
+# privileged.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: csi-proxmox
+  labels:
+    pod-security.kubernetes.io/enforce: privileged

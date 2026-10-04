@@ -1,0 +1,72 @@
+# Proxmox CSI: a PersistentVolume is a disk in the host's ZFS pool,
+# local-zfs, attached to whichever worker runs the pod - docs/decisions/0007.
+
+# The connection, from the ExternalSecret beside this file: the API token of
+# kubernetes-csi@pve, whose role CSI may only audit VMs, change their disks and
+# allocate in datastores.
+existingConfigSecret: proxmox-csi-config
+existingConfigSecretKey: config.yaml
+
+storageClass:
+  # The default. The disk goes with its claim.
+  - name: proxmox-zfs
+    storage: local-zfs
+    fstype: xfs
+    ssd: true
+    cache: none
+    reclaimPolicy: Delete
+    annotations:
+      storageclass.kubernetes.io/is-default-class: "true"
+  # For data that should outlive its claim: deleting the claim leaves the disk
+  # in local-zfs, to be bound again by a PersistentVolume naming it.
+  - name: proxmox-zfs-retain
+    storage: local-zfs
+    fstype: xfs
+    ssd: true
+    cache: none
+    reclaimPolicy: Retain
+
+# The controller on the control planes, as the plugin's documentation places
+# it; the node plugin runs everywhere a volume may be attached.
+nodeSelector:
+  node-role.kubernetes.io/control-plane: ""
+tolerations:
+  - key: node-role.kubernetes.io/control-plane
+    effect: NoSchedule
+
+# A memory limit on every container, far above use, so Talos's OOM controller
+# never picks a pod that mounts volumes.
+controller:
+  plugin:
+    resources:
+      requests: {cpu: 10m, memory: 32Mi}
+      limits: {memory: 128Mi}
+  attacher:
+    resources:
+      requests: {cpu: 10m, memory: 16Mi}
+      limits: {memory: 128Mi}
+  provisioner:
+    resources:
+      requests: {cpu: 10m, memory: 16Mi}
+      limits: {memory: 128Mi}
+  resizer:
+    resources:
+      requests: {cpu: 10m, memory: 16Mi}
+      limits: {memory: 128Mi}
+  snapshotter:
+    resources:
+      requests: {cpu: 10m, memory: 16Mi}
+      limits: {memory: 128Mi}
+node:
+  plugin:
+    resources:
+      requests: {cpu: 10m, memory: 32Mi}
+      limits: {memory: 256Mi}
+  driverRegistrar:
+    resources:
+      requests: {cpu: 10m, memory: 16Mi}
+      limits: {memory: 64Mi}
+livenessprobe:
+  resources:
+    requests: {cpu: 10m, memory: 16Mi}
+    limits: {memory: 64Mi}
