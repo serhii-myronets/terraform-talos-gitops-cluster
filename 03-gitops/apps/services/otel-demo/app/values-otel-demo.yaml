@@ -91,8 +91,10 @@ opentelemetry-collector:
       # No OpenSearch (opensearch below): the services' logs go over OTLP to
       # the lab's vlagent, which writes them to core's VictoriaLogs with
       # everything else the lab logs - each with its trace_id and span_id,
-      # so a log line leads to its trace.
-      opensearch: null
+      # so a log line leads to its trace. The chart's opensearch exporter
+      # stays defined, in no pipeline: "opensearch: null" emptied it under
+      # Argo CD's Helm rather than removing it, and the collector refused
+      # an exporter without an endpoint.
       otlp_http/vlagent:
         logs_endpoint: http://vlagent-vm.observability:9429/insert/opentelemetry/v1/logs
         headers:
