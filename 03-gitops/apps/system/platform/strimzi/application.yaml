@@ -3,6 +3,11 @@ kind: Application
 metadata:
   name: strimzi
   namespace: argocd
+  annotations:
+    # Compare with what the API server would store, not with the YAML: the
+    # kafkas CRD carries an empty "properties: {}", which the API server
+    # drops, so a client-side diff never comes clean.
+    argocd.argoproj.io/compare-options: ServerSideDiff=true
 spec:
   project: default
   # The Kafka operator: it runs a Kafka cluster for each Kafka resource it
