@@ -18,8 +18,7 @@ spec:
     - argocd.home
     - hubble.home
     - boutique.home
-    - redpanda.home
-    - kafbat.home
+    - kafka.home
   duration: 8760h
   renewBefore: 720h
   privateKey:

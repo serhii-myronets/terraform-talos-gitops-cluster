@@ -1,0 +1,16 @@
+# The Kafka UI. kafka.home on the LAN, with lab-ca's certificate, published to
+# the router's BIND; kafka.serhii.link through the lab's tunnel, behind
+# Cloudflare Access. The UI has no login of its own.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: kafbat-ui
+spec:
+  parentRefs:
+    - {name: main-gateway, namespace: gateway-system}
+  hostnames:
+    - kafka.home
+    - kafka.serhii.link
+  rules:
+    - backendRefs:
+        - {name: kafbat-ui, port: 80}

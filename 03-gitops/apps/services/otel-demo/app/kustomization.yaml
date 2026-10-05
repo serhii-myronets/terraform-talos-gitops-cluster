@@ -4,14 +4,8 @@ namespace: otel-demo
 resources:
   - namespace.yaml
   - kafka.yaml
-  - httproute-kafka-uis.yaml
+  - httproute-kafka-ui.yaml
 helmCharts:
-  - name: console
-    repo: https://charts.redpanda.com
-    version: 3.9.0
-    releaseName: redpanda-console
-    namespace: otel-demo
-    valuesFile: values-redpanda-console.yaml
   - name: kafka-ui
     repo: https://kafbat.github.io/helm-charts
     version: 1.6.5

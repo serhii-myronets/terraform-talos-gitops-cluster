@@ -1,6 +1,7 @@
-# Kafbat UI 1.5, the community's continuation of provectus/kafka-ui: the
-# same ground as Redpanda Console, under Apache 2.0, every feature free.
-# Both run for now, to choose between them.
+# Kafbat UI 1.5, the community's continuation of provectus/kafka-ui: topics,
+# messages, consumer groups and their lag, for any number of clusters.
+# Chosen over Redpanda Console on 2026-10-04: Apache 2.0 with every feature
+# free, where Console is source-available with SSO and RBAC paid for.
 yamlApplicationConfig:
   kafka:
     clusters:
