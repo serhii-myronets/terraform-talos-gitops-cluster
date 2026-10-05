@@ -31,6 +31,15 @@ already in the current layout and move back as they are:
   log store. Its CRDs are made by its operator, not by Argo CD, and were
   deleted by hand with it.
 
+- **online-boutique** - Google's microservices demo, chart 0.10.7, run on
+  2026-10-04 and 05 at boutique.home: eleven gRPC services and a Redis for
+  the cart, with startup probes for its two Python services, which their
+  liveness probes killed before they served. Its Postgres option needs
+  Google Cloud (AlloyDB through Secret Manager), so it stayed on Redis.
+  Taken off with the OpenTelemetry demo, which covers the same ground more
+  fully. To bring it back: move it to apps/services/, list it, and put
+  boutique.home back in the certificate.
+
 - **otel-demo** - the OpenTelemetry demo, chart 0.42.2, paused on
   2026-10-05 after a day of running, whole and as it ran: the Astronomy
   Shop on the lab's own operators - Kafka 4.3.1 on Strimzi with Kafbat UI at
