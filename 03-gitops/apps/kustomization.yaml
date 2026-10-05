@@ -27,3 +27,4 @@ resources:
   - system/observability/hubble/application.yaml
   # services
   - services/online-boutique/application.yaml
+  - services/otel-demo/application.yaml

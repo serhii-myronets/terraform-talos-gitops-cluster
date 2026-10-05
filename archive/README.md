@@ -31,14 +31,14 @@ already in the current layout and move back as they are:
   log store. Its CRDs are made by its operator, not by Argo CD, and were
   deleted by hand with it.
 
-- **awaiting-review** - four applications carried over from the earlier
+- **awaiting-review** - two applications carried over from the earlier
   lab and not yet reviewed, in the current layout but still in the older
-  multi-source form, a chart plus `$values`: minio (from
-  `system/storage`), postgresql (`system/platform`), kafka and otel-demo
-  (`services`). Moved out of `apps/` on 2026-10-04, so that `apps/` holds
-  only what runs. Their `application.yaml` still names its old path, so
-  each moves back to where it was. strimzi was here too, until a fresh
-  Strimzi 1.2 replaced it in `apps/` the same day.
+  multi-source form, a chart plus `$values`: minio (from `system/storage`)
+  and postgresql (`system/platform`). Moved out of `apps/` on 2026-10-04,
+  so that `apps/` holds only what runs; each `application.yaml` still names
+  its old path. strimzi, kafka and otel-demo were here too, until fresh
+  ones replaced them in `apps/` the same day - Strimzi 1.2, and the
+  OpenTelemetry demo with its Kafka on it.
 
 `assets/` holds the screenshots of that earlier lab - Proxmox, Argo CD,
 Grafana, Tempo, Jaeger, Hubble, Longhorn and the rest - which the README

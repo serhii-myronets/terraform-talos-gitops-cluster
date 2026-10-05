@@ -1,0 +1,67 @@
+# The shop's Kafka, run by Strimzi (system/platform/strimzi): checkout
+# writes each order to the topic orders; accounting and fraud-detection read
+# it. One node that is both broker and controller - KRaft, no ZooKeeper -
+# and a plain listener with no TLS and no login, as the demo's clients
+# expect. A demo: nothing in it is kept.
+apiVersion: kafka.strimzi.io/v1
+kind: Kafka
+metadata:
+  name: kafka
+spec:
+  kafka:
+    version: 4.3.1
+    listeners:
+      - name: plain
+        port: 9092
+        type: internal
+        tls: false
+    config:
+      # One node, so one copy of everything.
+      offsets.topic.replication.factor: 1
+      transaction.state.log.replication.factor: 1
+      transaction.state.log.min.isr: 1
+      default.replication.factor: 1
+      min.insync.replicas: 1
+      # Topics come from KafkaTopic resources, not from a client asking.
+      auto.create.topics.enable: false
+  entityOperator:
+    # Keeps the KafkaTopic resources and Kafka's topics the same.
+    topicOperator: {}
+---
+# The nodes of the cluster above: one, in both roles, with its data and
+# KRaft's metadata on one Proxmox disk that goes with the cluster.
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaNodePool
+metadata:
+  name: dual
+  labels:
+    strimzi.io/cluster: kafka
+spec:
+  replicas: 1
+  roles:
+    - controller
+    - broker
+  storage:
+    type: jbod
+    volumes:
+      - id: 0
+        type: persistent-claim
+        size: 5Gi
+        deleteClaim: true
+        kraftMetadata: shared
+  jvmOptions:
+    -Xms: 512m
+    -Xmx: 512m
+  resources:
+    requests: {cpu: 100m, memory: 1Gi}
+    limits: {memory: 1Gi}
+---
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaTopic
+metadata:
+  name: orders
+  labels:
+    strimzi.io/cluster: kafka
+spec:
+  partitions: 1
+  replicas: 1

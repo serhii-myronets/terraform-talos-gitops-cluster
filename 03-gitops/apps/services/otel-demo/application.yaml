@@ -1,20 +1,20 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: kafka
+  name: otel-demo
   namespace: argocd
-  annotations:
-    argocd.argoproj.io/sync-wave: "10"
 spec:
   project: default
+  # The OpenTelemetry demo shop, on the lab's own operators: its Kafka run
+  # by Strimzi, its Postgres by CloudNativePG. For now the Kafka alone.
   source:
     repoURL: https://github.com/serhii-myronets/terraform-talos-gitops-cluster.git
     targetRevision: homelab
-    path: 03-gitops/apps/services/kafka/app
+    path: 03-gitops/apps/services/otel-demo/app
   destination:
     server: https://kubernetes.default.svc
-    namespace: kafka
+    namespace: otel-demo
   syncPolicy:
     automated: {}
     syncOptions:
-      - CreateNamespace=true
+      - ServerSideApply=true
