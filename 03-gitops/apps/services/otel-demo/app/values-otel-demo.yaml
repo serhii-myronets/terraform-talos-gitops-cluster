@@ -87,6 +87,33 @@ opentelemetry-collector:
       kafkametrics:
         brokers:
           - kafka-kafka-bootstrap:9092
+    exporters:
+      # No OpenSearch (opensearch below): the services' logs go over OTLP to
+      # the lab's vlagent, which writes them to core's VictoriaLogs with
+      # everything else the lab logs - each with its trace_id and span_id,
+      # so a log line leads to its trace.
+      opensearch: null
+      otlp_http/vlagent:
+        logs_endpoint: http://vlagent-vm.observability:9429/insert/opentelemetry/v1/logs
+        headers:
+          # As every log line of the lab's carries.
+          VL-Extra-Fields: cluster=lab
+    service:
+      pipelines:
+        # The chart's own exporters but debug, which printed a line for every
+        # batch - the most of what the demo wrote to stdout, and so to core.
+        traces:
+          exporters: [otlp_grpc/jaeger, span_metrics]
+        metrics:
+          exporters: [otlp_http/prometheus]
+        logs:
+          exporters: [otlp_http/vlagent]
+        profiles:
+          exporters: [otlp_grpc/firepit]
+
+# Logs are core's VictoriaLogs' to keep.
+opensearch:
+  enabled: false
 
 prometheus:
   server:
