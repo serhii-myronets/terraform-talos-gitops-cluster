@@ -7,6 +7,7 @@ resources:
   - astronomy-db.yaml
   - pgweb.yaml
   - httproute-kafka-ui.yaml
+  - httproute-otel-demo.yaml
 configMapGenerator:
   - name: astronomy-db-init
     files:
@@ -15,9 +16,18 @@ configMapGenerator:
       # The Cluster names it as it is; kustomize cannot rename the reference.
       disableNameSuffixHash: true
 helmCharts:
+  - name: opentelemetry-demo
+    repo: https://open-telemetry.github.io/opentelemetry-helm-charts
+    version: 0.42.2
+    releaseName: otel-demo
+    namespace: otel-demo
+    valuesFile: values-otel-demo.yaml
   - name: kafka-ui
     repo: https://kafbat.github.io/helm-charts
     version: 1.6.5
     releaseName: kafbat-ui
     namespace: otel-demo
     valuesFile: values-kafbat-ui.yaml
+patches:
+  - path: patch-accounting-db-password.yaml
+    target: {kind: Deployment, name: accounting}

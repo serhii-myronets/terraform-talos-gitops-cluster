@@ -1,0 +1,80 @@
+# OpenTelemetry demo 3.1 (chart 0.42.2): the Astronomy Shop - some fifteen
+# services in a dozen languages, a load generator, and its own observability
+# stack (collector, Jaeger, Prometheus, Grafana, OpenSearch), all as the chart
+# ships them but for its stores: Kafka is Strimzi's (kafka.yaml) and Postgres
+# CloudNativePG's (astronomy-db.yaml), in place of the chart's own pods.
+
+components:
+  # The lab's Kafka and Postgres instead.
+  kafka:
+    enabled: false
+  astronomy-db:
+    enabled: false
+
+  # The AI shopping assistant and its tools: they need a real LLM endpoint
+  # and key, which the chart only stubs.
+  agent:
+    enabled: false
+  chatbot:
+    enabled: false
+  mcp:
+    enabled: false
+
+  checkout:
+    envOverrides:
+      - {name: KAFKA_ADDR, value: "kafka-kafka-bootstrap:9092"}
+    initContainers:
+      - name: wait-for-kafka
+        image: busybox:1.37
+        command: ["sh", "-c", "until nc -z -w30 kafka-kafka-bootstrap 9092; do echo waiting for kafka; sleep 2; done"]
+
+  fraud-detection:
+    envOverrides:
+      - {name: KAFKA_ADDR, value: "kafka-kafka-bootstrap:9092"}
+    initContainers:
+      - name: wait-for-kafka
+        image: busybox:1.37
+        command: ["sh", "-c", "until nc -z -w30 kafka-kafka-bootstrap 9092; do echo waiting for kafka; sleep 2; done"]
+
+  accounting:
+    envOverrides:
+      - {name: KAFKA_ADDR, value: "kafka-kafka-bootstrap:9092"}
+      # Npgsql's key=value form; DB_PASSWORD, from CloudNativePG's Secret, is
+      # put first in the list by patch-accounting-db-password.yaml, as
+      # Kubernetes expands $(VAR) only from variables defined before it.
+      - name: DB_CONNECTION_STRING
+        value: "Host=astronomy-db-rw;Username=astronomy_user;Password=$(DB_PASSWORD);Database=astronomy_db"
+    initContainers:
+      - name: wait-for-kafka
+        image: busybox:1.37
+        command: ["sh", "-c", "until nc -z -w30 kafka-kafka-bootstrap 9092; do echo waiting for kafka; sleep 2; done"]
+
+  product-catalog:
+    envOverrides:
+      # The uri CloudNativePG writes for the app user, as pgx takes it.
+      - name: DB_CONNECTION_STRING
+        valueFrom:
+          secretKeyRef: {name: astronomy-db-app, key: uri}
+    initContainers:
+      - name: wait-for-astronomy-db
+        image: busybox:1.37
+        command: ["sh", "-c", "until nc -z -w30 astronomy-db-rw 5432; do echo waiting for astronomy-db; sleep 2; done"]
+
+opentelemetry-collector:
+  # One Deployment rather than an agent on every node: the agent reads each
+  # host's filesystem and binds host ports, which the namespace's baseline
+  # Pod Security forbids. The services reach it by its Service either way;
+  # only the nodes' and kubelets' own metrics go, and the lab's agents send
+  # those to core already.
+  mode: deployment
+  presets:
+    hostMetrics:
+      enabled: false
+    kubeletMetrics:
+      enabled: false
+  config:
+    receivers:
+      # Kafka's brokers, topics and consumer lag, from Strimzi's cluster.
+      kafkametrics:
+        brokers:
+          - kafka-kafka-bootstrap:9092

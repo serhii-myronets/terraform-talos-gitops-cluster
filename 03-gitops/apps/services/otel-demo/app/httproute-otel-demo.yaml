@@ -1,0 +1,18 @@
+# The shop, through the demo's own Envoy, frontend-proxy, which also serves
+# its tools under paths: /grafana, /jaeger/ui, /feature (flagd's UI, to
+# switch the demo's failures on) and /loadgen. otel-demo.home on the LAN,
+# with lab-ca's certificate; otel-demo.serhii.link through the lab's tunnel,
+# behind Cloudflare Access.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: frontend-proxy
+spec:
+  parentRefs:
+    - {name: main-gateway, namespace: gateway-system}
+  hostnames:
+    - otel-demo.home
+    - otel-demo.serhii.link
+  rules:
+    - backendRefs:
+        - {name: frontend-proxy, port: 8080}

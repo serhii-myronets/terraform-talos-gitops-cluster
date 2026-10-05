@@ -20,6 +20,7 @@ spec:
     - boutique.home
     - kafka.home
     - postgres.home
+    - otel-demo.home
   duration: 8760h
   renewBefore: 720h
   privateKey:

@@ -80,11 +80,11 @@ applications:                       # 03-gitops/apps/kustomization.yaml - decisi
     - system/storage/proxmox-csi         # chart 0.5.12
     - system/platform/argocd             # its route only; Argo CD is 02-bootstrap's
     - system/platform/metrics-server     # chart 3.14.0
-    - system/platform/strimzi            # chart 1.2.0, watching every namespace; no Kafka clusters yet
+    - system/platform/strimzi            # chart 1.2.0, watching every namespace
     - system/platform/cloudnative-pg     # chart 0.29.1, operator 1.30.1; no databases yet, no backup plugin until R2
     - system/observability/victoria-metrics  # chart 0.95.0, agents only, writing to core - decisions/0008
     - services/online-boutique           # chart 0.10.7, a demo to run the lab's tools against; boutique.home and .serhii.link
-    - services/otel-demo                 # being built: so far its Kafka, 4.3.1 on Strimzi, one node, with Kafbat UI at kafka.home, and its Postgres, astronomy-db on CloudNativePG, with pgweb at postgres.home
+    - services/otel-demo                 # chart 0.42.2 (demo 3.1) at otel-demo.home; its Kafka 4.3.1 on Strimzi (kafka.home) and Postgres on CloudNativePG (postgres.home)
     - system/observability/hubble        # its route only, hubble.home and .serhii.link; Hubble is Cilium's, in 02-bootstrap
   waiting_for_review:                # in archive/awaiting-review, outside apps/
     - minio                          # was system/storage
