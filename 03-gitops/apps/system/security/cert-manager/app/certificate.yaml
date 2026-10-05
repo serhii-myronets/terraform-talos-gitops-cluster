@@ -19,6 +19,7 @@ spec:
     - hubble.home
     - boutique.home
     - kafka.home
+    - postgres.home
   duration: 8760h
   renewBefore: 720h
   privateKey:

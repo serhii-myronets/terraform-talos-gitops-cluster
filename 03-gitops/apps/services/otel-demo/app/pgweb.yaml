@@ -1,0 +1,66 @@
+# A web UI for the shop's Postgres: tables, rows, structure, a SQL editor.
+# pgweb keeps no state of its own - it connects as astronomy_user with the
+# uri CloudNativePG writes into astronomy-db-app, so nothing is set by hand.
+# Read-only and locked to that one database: it answers without a login.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pgweb
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: pgweb}
+  template:
+    metadata:
+      labels: {app: pgweb}
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+        - name: pgweb
+          image: sosedoff/pgweb:0.17.0
+          args: [--bind=0.0.0.0, --listen=8081, --readonly, --lock-session]
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef: {name: astronomy-db-app, key: uri}
+          ports:
+            - {name: http, containerPort: 8081}
+          readinessProbe:
+            httpGet: {path: /, port: http}
+          resources:
+            requests: {cpu: 5m, memory: 16Mi}
+            limits: {memory: 64Mi}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: [ALL]}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pgweb
+spec:
+  selector: {app: pgweb}
+  ports:
+    - {name: http, port: 80, targetPort: http}
+---
+# postgres.home on the LAN, with lab-ca's certificate, published to the
+# router's BIND; postgres.serhii.link through the lab's tunnel, behind
+# Cloudflare Access.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: pgweb
+spec:
+  parentRefs:
+    - {name: main-gateway, namespace: gateway-system}
+  hostnames:
+    - postgres.home
+    - postgres.serhii.link
+  rules:
+    - backendRefs:
+        - {name: pgweb, port: 80}

@@ -5,6 +5,7 @@ resources:
   - namespace.yaml
   - kafka.yaml
   - astronomy-db.yaml
+  - pgweb.yaml
   - httproute-kafka-ui.yaml
 configMapGenerator:
   - name: astronomy-db-init
