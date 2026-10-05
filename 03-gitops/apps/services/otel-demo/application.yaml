@@ -3,6 +3,11 @@ kind: Application
 metadata:
   name: otel-demo
   namespace: argocd
+  annotations:
+    # Compare with what the API server would store: it fills in an
+    # HTTPRoute's defaults - group, kind, weight, the match on / - which a
+    # client-side diff of the YAML counts as a change.
+    argocd.argoproj.io/compare-options: ServerSideDiff=true
 spec:
   project: default
   # The OpenTelemetry demo shop, on the lab's own operators: its Kafka run
