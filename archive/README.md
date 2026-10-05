@@ -31,6 +31,17 @@ already in the current layout and move back as they are:
   log store. Its CRDs are made by its operator, not by Argo CD, and were
   deleted by hand with it.
 
+- **otel-demo** - the OpenTelemetry demo, chart 0.42.2, paused on
+  2026-10-05 after a day of running, whole and as it ran: the Astronomy
+  Shop on the lab's own operators - Kafka 4.3.1 on Strimzi with Kafbat UI at
+  kafka.home, Postgres on CloudNativePG with pgweb at postgres.home - its
+  logs over OTLP to the lab's vlagent and so to core, no OpenSearch. Waits
+  for core to take its traces and metrics as well (Tempo, and the demo's
+  metrics into VictoriaMetrics) so that its own Jaeger, Prometheus and
+  Grafana can go. To bring it back: move it to apps/services/, list it in
+  apps/kustomization.yaml and put its three .home names back in the
+  certificate; the operators it needs stay installed.
+
 - **awaiting-review** - two applications carried over from the earlier
   lab and not yet reviewed, in the current layout but still in the older
   multi-source form, a chart plus `$values`: minio (from `system/storage`)
