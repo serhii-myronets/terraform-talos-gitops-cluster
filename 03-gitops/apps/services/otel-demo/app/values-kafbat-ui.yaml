@@ -1,0 +1,21 @@
+# Kafbat UI 1.5, the community's continuation of provectus/kafka-ui: the
+# same ground as Redpanda Console, under Apache 2.0, every feature free.
+# Both run for now, to choose between them.
+yamlApplicationConfig:
+  kafka:
+    clusters:
+      - name: otel-demo
+        bootstrapServers: kafka-kafka-bootstrap:9092
+  # No login of its own: the LAN, or Cloudflare Access for the public name.
+  auth:
+    type: disabled
+  management:
+    health:
+      ldap:
+        enabled: false
+
+resources:
+  requests: {cpu: 10m, memory: 256Mi}
+  limits: {memory: 512Mi}
+
+fullnameOverride: kafbat-ui

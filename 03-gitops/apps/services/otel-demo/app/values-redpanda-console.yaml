@@ -1,0 +1,13 @@
+# Redpanda Console 3.9: a web UI for the Kafka beside it - topics, messages
+# decoded as they arrive, consumer groups and their lag. Source-available
+# (BSL), free to run; SSO and RBAC are its enterprise edition's.
+config:
+  kafka:
+    brokers:
+      - kafka-kafka-bootstrap:9092
+
+resources:
+  requests: {cpu: 10m, memory: 64Mi}
+  limits: {memory: 256Mi}
+
+fullnameOverride: redpanda-console
