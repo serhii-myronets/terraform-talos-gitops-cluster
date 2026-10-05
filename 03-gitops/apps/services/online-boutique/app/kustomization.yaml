@@ -11,3 +11,6 @@ helmCharts:
     releaseName: online-boutique
     namespace: online-boutique
     valuesFile: values.yaml
+patches:
+  - path: startup-probes.yaml
+    target: {kind: Deployment, name: "emailservice|recommendationservice"}
