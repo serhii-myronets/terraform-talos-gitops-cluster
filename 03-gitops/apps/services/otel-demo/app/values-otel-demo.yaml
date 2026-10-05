@@ -78,3 +78,11 @@ opentelemetry-collector:
       kafkametrics:
         brokers:
           - kafka-kafka-bootstrap:9092
+
+prometheus:
+  server:
+    # The chart's 400Mi is too little for the metrics of seventeen services
+    # written to it over OTLP; it was OOM-killed within minutes.
+    resources:
+      requests: {memory: 512Mi}
+      limits: {memory: 1Gi}
