@@ -1,0 +1,33 @@
+# The shop's Postgres, run by CloudNativePG (system/platform/cloudnative-pg):
+# accounting writes the orders it reads from Kafka into the schema
+# accounting; product-catalog reads the shop's products from catalog.
+#
+# CloudNativePG makes the database astronomy_db and its owner astronomy_user,
+# with a generated password, in the Secret astronomy-db-app - user, password,
+# host, a ready uri - and the Services astronomy-db-rw (the primary, for
+# writes), -ro (replicas) and -r (any). One instance: a demo, nothing kept.
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: astronomy-db
+spec:
+  instances: 1
+  bootstrap:
+    initdb:
+      database: astronomy_db
+      owner: astronomy_user
+      # The demo's schemas, tables and products, run once at creation.
+      postInitApplicationSQLRefs:
+        configMapRefs:
+          - name: astronomy-db-init
+            key: init.sql
+  postgresql:
+    parameters:
+      # Any pg_stat_statements setting makes CloudNativePG preload the
+      # library, which the extension the demo creates needs.
+      pg_stat_statements.track: all
+  storage:
+    size: 2Gi
+  resources:
+    requests: {cpu: 50m, memory: 256Mi}
+    limits: {memory: 512Mi}

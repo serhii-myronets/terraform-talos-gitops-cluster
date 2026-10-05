@@ -4,7 +4,15 @@ namespace: otel-demo
 resources:
   - namespace.yaml
   - kafka.yaml
+  - astronomy-db.yaml
   - httproute-kafka-ui.yaml
+configMapGenerator:
+  - name: astronomy-db-init
+    files:
+      - init.sql=astronomy-db-init.sql
+    options:
+      # The Cluster names it as it is; kustomize cannot rename the reference.
+      disableNameSuffixHash: true
 helmCharts:
   - name: kafka-ui
     repo: https://kafbat.github.io/helm-charts

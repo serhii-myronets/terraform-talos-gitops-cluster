@@ -84,7 +84,7 @@ applications:                       # 03-gitops/apps/kustomization.yaml - decisi
     - system/platform/cloudnative-pg     # chart 0.29.1, operator 1.30.1; no databases yet, no backup plugin until R2
     - system/observability/victoria-metrics  # chart 0.95.0, agents only, writing to core - decisions/0008
     - services/online-boutique           # chart 0.10.7, a demo to run the lab's tools against; boutique.home and .serhii.link
-    - services/otel-demo                 # being built: so far its Kafka, 4.3.1 on Strimzi, one node, and Kafbat UI for it at kafka.home
+    - services/otel-demo                 # being built: so far its Kafka, 4.3.1 on Strimzi, one node, with Kafbat UI at kafka.home, and its Postgres, astronomy-db on CloudNativePG
     - system/observability/hubble        # its route only, hubble.home and .serhii.link; Hubble is Cilium's, in 02-bootstrap
   waiting_for_review:                # in archive/awaiting-review, outside apps/
     - minio                          # was system/storage
