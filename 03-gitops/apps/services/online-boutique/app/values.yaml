@@ -4,3 +4,8 @@
 # LoadBalancer address of its own.
 frontend:
   externalService: false
+
+# No load generator for now: the shop stays quiet until something is tried
+# on it. Turn it back on for traffic to watch.
+loadGenerator:
+  create: false
