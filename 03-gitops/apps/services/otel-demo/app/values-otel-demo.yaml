@@ -49,6 +49,15 @@ components:
         image: busybox:1.37
         command: ["sh", "-c", "until nc -z -w30 kafka-kafka-bootstrap 9092; do echo waiting for kafka; sleep 2; done"]
 
+  # Quieter than the chart's: two users rather than five, and no headless
+  # Chromium among them - the browser users cost most of the generator's
+  # CPU, near a core, for traffic the HTTP users make as well. Users can
+  # still be added for a while from /loadgen.
+  load-generator:
+    envOverrides:
+      - {name: LOCUST_USERS, value: "2"}
+      - {name: LOCUST_BROWSER_TRAFFIC_ENABLED, value: "false"}
+
   product-catalog:
     envOverrides:
       # The uri CloudNativePG writes for the app user, as pgx takes it.
