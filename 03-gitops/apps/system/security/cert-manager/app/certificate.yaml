@@ -17,6 +17,7 @@ spec:
   dnsNames:
     - argocd.home
     - hubble.home
+    - boutique.home
   duration: 8760h
   renewBefore: 720h
   privateKey:

@@ -1,0 +1,6 @@
+# Online Boutique 0.10.7, as the chart ships it, but for the way in.
+
+# The shop is reached through the lab's Gateway (httproute.yaml), not a
+# LoadBalancer address of its own.
+frontend:
+  externalService: false

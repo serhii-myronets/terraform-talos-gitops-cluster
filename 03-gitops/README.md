@@ -15,7 +15,7 @@ Everything Argo CD runs on the lab, laid out as core's `core/03-gitops/apps` is 
 │   │   ├── storage/          proxmox-csi
 │   │   ├── platform/         argocd, metrics-server, cloudnative-pg
 │   │   └── observability/    victoria-metrics, hubble
-│   └── services/             none yet
+│   └── services/             online-boutique
 ```
 
 Each application is a folder: `application.yaml`, the Argo CD Application, and `app/`, everything it deploys. `app/kustomization.yaml` lists the manifests and renders Helm charts with `helmCharts:` from the values beside it, so the Application has one source - the folder.

@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: online-boutique
+  namespace: argocd
+spec:
+  project: default
+  # Google's microservices demo: a shop of eleven services talking gRPC, a
+  # Redis for the cart and a load generator buying things all day - something
+  # to run the lab's tools against. A demo, nothing kept: the cart lives in
+  # memory and goes with its pod.
+  source:
+    repoURL: https://github.com/serhii-myronets/terraform-talos-gitops-cluster.git
+    targetRevision: homelab
+    path: 03-gitops/apps/services/online-boutique/app
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: online-boutique
+  syncPolicy:
+    automated: {}
