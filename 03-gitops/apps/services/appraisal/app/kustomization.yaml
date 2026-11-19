@@ -4,3 +4,4 @@ namespace: appraisal
 resources:
   - appraisal-db.yaml
   - geo-db.yaml
+  - backup.yaml

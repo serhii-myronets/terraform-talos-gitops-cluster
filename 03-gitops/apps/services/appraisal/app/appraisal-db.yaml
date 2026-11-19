@@ -1,7 +1,7 @@
 # The reports, their sources' records, jobs, reviews, rules and the model-call ledger.
 # One instance: the data is the owner's and cannot be copied again from anywhere, so
-# its volume is kept when the cluster is rebuilt (proxmox-zfs-retain). Backups to R2
-# come next (decisions/0013).
+# its volume is kept when the cluster is rebuilt (proxmox-zfs-retain), and it is
+# backed up to R2 (backup.yaml, decisions/0014).
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
@@ -16,6 +16,12 @@ spec:
     initdb:
       database: appraisal
       owner: appraisal
+  # The WAL goes to R2 as it is written; the base backups are scheduled in backup.yaml.
+  plugins:
+    - name: barman-cloud.cloudnative-pg.io
+      isWALArchiver: true
+      parameters:
+        barmanObjectName: r2
   resources:
     requests: {cpu: 100m, memory: 256Mi}
     limits: {memory: 1Gi}

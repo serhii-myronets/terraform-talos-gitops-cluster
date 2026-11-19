@@ -1,0 +1,7 @@
+# The Barman Cloud plugin 0.15; its certificates come from the lab's cert-manager.
+resources:
+  requests:
+    cpu: 10m
+    memory: 64Mi
+  limits:
+    memory: 256Mi

@@ -25,3 +25,4 @@ docs/decisions/; these are the lab's own.
 | [0011](0011-external-secrets-logs-in-with-the-clusters-own-token.md) | External Secrets logs in to Infisical with the cluster's own ServiceAccount token | accepted | external-secrets, infisical, jwt |
 | [0012](0012-the-proxmox-token-is-in-infisical.md) | Terraform's Proxmox token is in the lab's Infisical project, not in a file on the Mac | accepted | proxmox, terraform, infisical |
 | [0013](0013-appraisal-databases-in-the-lab.md) | The Appraisal Workbench keeps its two databases in the lab, reached from the Mac on the LAN | accepted | cloudnative-pg, postgres, postgis, appraisal |
+| [0014](0014-appraisal-db-backs-up-to-r2.md) | appraisal-db backs up to R2 through the Barman Cloud plugin, beside core's backups | accepted | cloudnative-pg, backup, r2, barman |
