@@ -49,3 +49,37 @@ spec:
   method: plugin
   pluginConfiguration:
     name: barman-cloud.cloudnative-pg.io
+---
+# geo-db: the same bucket and key pair, its own retention. Its data changes when a map or
+# the parcels are copied again, a few times a year, so a weekly base backup and two
+# weeks of WAL are enough (decisions/0015).
+apiVersion: barmancloud.cnpg.io/v1
+kind: ObjectStore
+metadata:
+  name: r2-geo
+spec:
+  retentionPolicy: 14d
+  configuration:
+    destinationPath: s3://homelab-backups/lab/cnpg
+    endpointURL: https://32bd020558a0bb7293a40decd3f7b161.r2.cloudflarestorage.com
+    s3Credentials:
+      accessKeyId: {name: r2-credentials, key: ACCESS_KEY_ID}
+      secretAccessKey: {name: r2-credentials, key: SECRET_ACCESS_KEY}
+    wal:
+      compression: gzip
+    data:
+      compression: gzip
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: ScheduledBackup
+metadata:
+  name: geo-db-weekly
+spec:
+  schedule: "0 0 5 * * 0"
+  backupOwnerReference: self
+  immediate: true
+  cluster:
+    name: geo-db
+  method: plugin
+  pluginConfiguration:
+    name: barman-cloud.cloudnative-pg.io

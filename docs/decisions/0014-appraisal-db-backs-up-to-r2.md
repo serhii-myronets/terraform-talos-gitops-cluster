@@ -17,7 +17,7 @@ a base backup daily at 04:30, into R2, bucket `homelab-backups`, prefix
 Infisical keeps at `/system/backups`. 30 days are kept, so a restore can go to
 any moment of them.
 
-`geo-db` is not backed up: its maps are copied again from their sources.
+`geo-db` was first left without a backup; since 0015 it is backed up weekly.
 
 ## Rejected
 

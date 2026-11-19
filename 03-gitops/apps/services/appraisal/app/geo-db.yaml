@@ -1,7 +1,7 @@
-# The maps the application copies: zoning, FEMA flood zones, USGS water, and to come
-# parcels, roads and golf courses. Reference data, a few gigabytes with the parcels,
-# that can always be copied again from its sources: no backup needed, and a volume
-# that may go with the cluster. PostGIS for the spatial index.
+# The maps the application copies: zoning, FEMA flood zones, USGS water, the five
+# counties' parcels and roads. Reference data that can be copied again from its sources,
+# but that takes hours and depends on public servers that often refuse: it is backed up
+# to R2 weekly (backup.yaml, decisions/0015). PostGIS for the spatial index.
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
@@ -18,6 +18,11 @@ spec:
       owner: appraisal
       postInitApplicationSQL:
         - CREATE EXTENSION IF NOT EXISTS postgis
+  plugins:
+    - name: barman-cloud.cloudnative-pg.io
+      isWALArchiver: true
+      parameters:
+        barmanObjectName: r2-geo
   resources:
     requests: {cpu: 100m, memory: 512Mi}
     limits: {memory: 2Gi}
