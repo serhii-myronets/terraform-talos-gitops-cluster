@@ -16,6 +16,11 @@ day. It is backed up the way appraisal-db is, through the Barman Cloud plugin in
 same bucket and prefix with the same key pair, but with its own ObjectStore `r2-geo`:
 a base backup on Sundays at 05:00 and 14 days kept. About 1.5 GB.
 
+Verified on 2026-11-19: the first backup (`geo-db-first`, 3 minutes) was restored into a
+temporary cluster, whose tables matched the live ones row for row (42 maps, 150,248 map
+areas, 615,784 parcels with the same ids, 38,820 road segments); the cluster was then
+deleted.
+
 ## Rejected
 
 - **No backup (0014).** Cheap only while the copies are quick and the servers answer.
