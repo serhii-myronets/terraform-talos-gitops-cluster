@@ -1,0 +1,34 @@
+# The reports, their sources' records, jobs, reviews, rules and the model-call ledger.
+# One instance: the data is the owner's and cannot be copied again from anywhere, so
+# its volume is kept when the cluster is rebuilt (proxmox-zfs-retain). Backups to R2
+# come next (decisions/0013).
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: appraisal-db
+spec:
+  instances: 1
+  imageName: ghcr.io/cloudnative-pg/postgresql:17.6
+  storage:
+    size: 10Gi
+    storageClass: proxmox-zfs-retain
+  bootstrap:
+    initdb:
+      database: appraisal
+      owner: appraisal
+  resources:
+    requests: {cpu: 100m, memory: 256Mi}
+    limits: {memory: 1Gi}
+  managed:
+    services:
+      # The application runs on the Mac: the primary is offered on the LAN, at a
+      # fixed address from the lab's pool, with CloudNativePG's own TLS.
+      additional:
+        - selectorType: rw
+          serviceTemplate:
+            metadata:
+              name: appraisal-db-lan
+              annotations:
+                lbipam.cilium.io/ips: 192.168.8.32
+            spec:
+              type: LoadBalancer

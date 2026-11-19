@@ -24,3 +24,4 @@ docs/decisions/; these are the lab's own.
 | [0010](0010-the-lab-is-made-from-secrets-in-infisical.md) | The lab is made from Talos secrets kept in Infisical, and writes its client configurations back | accepted | talos, terraform, infisical, secrets |
 | [0011](0011-external-secrets-logs-in-with-the-clusters-own-token.md) | External Secrets logs in to Infisical with the cluster's own ServiceAccount token | accepted | external-secrets, infisical, jwt |
 | [0012](0012-the-proxmox-token-is-in-infisical.md) | Terraform's Proxmox token is in the lab's Infisical project, not in a file on the Mac | accepted | proxmox, terraform, infisical |
+| [0013](0013-appraisal-databases-in-the-lab.md) | The Appraisal Workbench keeps its two databases in the lab, reached from the Mac on the LAN | accepted | cloudnative-pg, postgres, postgis, appraisal |

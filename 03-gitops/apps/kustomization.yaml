@@ -25,3 +25,5 @@ resources:
   # observability
   - system/observability/victoria-metrics/application.yaml
   - system/observability/hubble/application.yaml
+  # services
+  - services/appraisal/application.yaml

@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: appraisal
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "10"
+spec:
+  project: default
+  # The databases of the Appraisal Workbench (the owner's application, its own
+  # repository). The application itself still runs on the Mac and reaches them on
+  # the LAN; it moves here later (docs/decisions/0013).
+  source:
+    repoURL: https://github.com/serhii-myronets/terraform-talos-gitops-cluster.git
+    targetRevision: homelab
+    path: 03-gitops/apps/services/appraisal/app
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: appraisal
+  syncPolicy:
+    automated: {}
+    syncOptions:
+      - CreateNamespace=true

@@ -1,0 +1,34 @@
+# The maps the application copies: zoning, FEMA flood zones, USGS water, and to come
+# parcels, roads and golf courses. Reference data, a few gigabytes with the parcels,
+# that can always be copied again from its sources: no backup needed, and a volume
+# that may go with the cluster. PostGIS for the spatial index.
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: geo-db
+spec:
+  instances: 1
+  imageName: ghcr.io/cloudnative-pg/postgis:17-3.5
+  storage:
+    size: 20Gi
+    storageClass: proxmox-zfs
+  bootstrap:
+    initdb:
+      database: geo
+      owner: appraisal
+      postInitApplicationSQL:
+        - CREATE EXTENSION IF NOT EXISTS postgis
+  resources:
+    requests: {cpu: 100m, memory: 512Mi}
+    limits: {memory: 2Gi}
+  managed:
+    services:
+      additional:
+        - selectorType: rw
+          serviceTemplate:
+            metadata:
+              name: geo-db-lan
+              annotations:
+                lbipam.cilium.io/ips: 192.168.8.33
+            spec:
+              type: LoadBalancer
