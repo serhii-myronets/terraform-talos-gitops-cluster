@@ -1,0 +1,48 @@
+# WhoDB: a read-only look over appraisal-db at whodb.home, LAN only (no serhii.link name).
+# It keeps no connection: its login form takes the role `viewer`, whose password is in
+# the secret appraisal-db-viewer (made by hand, not in Git), and that role can only read
+# (appraisal-flow's tools/lab/viewer-grants.sql).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: whodb
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: whodb}
+  template:
+    metadata:
+      labels: {app: whodb}
+    spec:
+      containers:
+        - name: whodb
+          image: clidey/whodb:0.138.0
+          ports:
+            - {name: http, containerPort: 8080}
+          resources:
+            requests: {cpu: 10m, memory: 64Mi}
+            limits: {memory: 256Mi}
+          readinessProbe:
+            tcpSocket: {port: http}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: whodb
+spec:
+  selector: {app: whodb}
+  ports:
+    - {name: http, port: 80, targetPort: http}
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: whodb
+spec:
+  parentRefs:
+    - {name: main-gateway, namespace: gateway-system}
+  hostnames:
+    - whodb.home
+  rules:
+    - backendRefs:
+        - {name: whodb, port: 80}

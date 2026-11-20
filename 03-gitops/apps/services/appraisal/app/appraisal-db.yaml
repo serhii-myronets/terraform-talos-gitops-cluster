@@ -26,6 +26,18 @@ spec:
     requests: {cpu: 100m, memory: 256Mi}
     limits: {memory: 1Gi}
   managed:
+    # A role that can only read, for WhoDB (whodb.yaml); its grants are run once by hand.
+    roles:
+      - name: viewer
+        ensure: present
+        login: true
+        superuser: false
+        createdb: false
+        createrole: false
+        inherit: false
+        connectionLimit: 5
+        passwordSecret:
+          name: appraisal-db-viewer
     services:
       # The application runs on the Mac: the primary is offered on the LAN, at a
       # fixed address from the lab's pool, with CloudNativePG's own TLS.
