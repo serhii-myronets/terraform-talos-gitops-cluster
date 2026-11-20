@@ -6,3 +6,4 @@ resources:
   - geo-db.yaml
   - backup.yaml
   - whodb.yaml
+  - viewer-secret.yaml

@@ -1,6 +1,6 @@
 # WhoDB: a read-only look over appraisal-db at whodb.home, LAN only (no serhii.link name).
 # It keeps no connection: its login form takes the role `viewer`, whose password is in
-# the secret appraisal-db-viewer (made by hand, not in Git), and that role can only read
+# the secret appraisal-db-viewer (viewer-secret.yaml, from Infisical), and that role can only read
 # (appraisal-flow's tools/lab/viewer-grants.sql).
 apiVersion: apps/v1
 kind: Deployment
