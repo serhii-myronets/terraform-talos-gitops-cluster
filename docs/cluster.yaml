@@ -85,7 +85,7 @@ applications:                       # 03-gitops/apps/kustomization.yaml - decisi
     - system/platform/plugin-barman-cloud  # chart 0.8.1, plugin 0.15.1; backups to R2 - decisions/0014
     - system/observability/victoria-metrics  # chart 0.95.0, agents only, writing to core - decisions/0008
     - system/observability/hubble        # its route only, hubble.home and .serhii.link; Hubble is Cilium's, in 02-bootstrap
-    - services/appraisal                 # the Appraisal Workbench's databases: appraisal-db at 192.168.8.32 (backed up to R2), geo-db (PostGIS, weekly to R2) at .33 - decisions/0013, 0014, 0015; WhoDB at whodb.home under the read-only role viewer (password in Infisical /system/appraisal-db, synced to appraisal-db-viewer)
+    - services/appraisal                 # the Appraisal Workbench's databases: appraisal-db at 192.168.8.32 (backed up to R2), geo-db (PostGIS, weekly to R2) at .33 - decisions/0013, 0014, 0015; WhoDB at whodb.home under the read-only role viewer (password in Infisical /services/appraisal, synced to appraisal-db-viewer)
   waiting_for_review:                # in archive/awaiting-review, outside apps/
     - minio                          # was system/storage
     - postgresql                     # was system/platform
