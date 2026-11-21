@@ -1,23 +1,8 @@
 # appraisal-db's base backups and its WAL archive, in R2 beside core's backups:
 # bucket homelab-backups, prefix lab/cnpg (the cluster's name is added below it).
-# The key pair is the one in the lab's Infisical at /system/backups. A daily base
+# The key pair is r2-credentials (externalsecret.yaml). A daily base
 # backup at 04:30; the WAL archive covers every change in between, so a restore can
 # go to any moment of the last 30 days (decisions/0014).
-apiVersion: external-secrets.io/v1
-kind: ExternalSecret
-metadata:
-  name: r2-credentials
-spec:
-  refreshInterval: 1h
-  secretStoreRef:
-    kind: ClusterSecretStore
-    name: infisical-cloud
-  target:
-    name: r2-credentials
-  data:
-    - {secretKey: ACCESS_KEY_ID, remoteRef: {key: /system/backups/R2_ACCESS_KEY_ID}}
-    - {secretKey: SECRET_ACCESS_KEY, remoteRef: {key: /system/backups/R2_SECRET_ACCESS_KEY}}
----
 apiVersion: barmancloud.cnpg.io/v1
 kind: ObjectStore
 metadata:

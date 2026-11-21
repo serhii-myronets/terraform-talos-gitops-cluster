@@ -1,6 +1,6 @@
 # WhoDB: a read-only look over appraisal-db at whodb.home, LAN only (no serhii.link name).
 # It keeps no connection: its login form takes the role `viewer`, whose password is in
-# the secret appraisal-db-viewer (viewer.yaml, from Infisical), and that role can only read
+# the secret appraisal-db-viewer (externalsecret.yaml, from Infisical), and that role can only read
 # (appraisal-flow's tools/lab/viewer-grants.sql).
 apiVersion: apps/v1
 kind: Deployment
@@ -33,16 +33,3 @@ spec:
   selector: {app: whodb}
   ports:
     - {name: http, port: 80, targetPort: http}
----
-apiVersion: gateway.networking.k8s.io/v1
-kind: HTTPRoute
-metadata:
-  name: whodb
-spec:
-  parentRefs:
-    - {name: main-gateway, namespace: gateway-system}
-  hostnames:
-    - whodb.home
-  rules:
-    - backendRefs:
-        - {name: whodb, port: 80}
