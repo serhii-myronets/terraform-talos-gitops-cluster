@@ -1,7 +1,8 @@
-# WhoDB: a read-only look over appraisal-db at whodb.home, LAN only (no serhii.link name).
-# It keeps no connection: its login form takes the role `viewer`, whose password is in
-# the secret appraisal-db-viewer (externalsecret.yaml, from Infisical), and that role can only read
-# (appraisal-flow's tools/lab/viewer-grants.sql).
+# WhoDB: a read-only look over appraisal-db at whodb.home, LAN only (httproute.yaml).
+# One saved profile, appraisal, as the role viewer, so the page opens without a password
+# (the owner's choice, 2026-11-20). The password comes from the secret appraisal-db-viewer
+# (externalsecret.yaml, from Infisical); the role can only read (appraisal-flow's
+# tools/lab/viewer-grants.sql), so anyone on the LAN can only look.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -17,6 +18,13 @@ spec:
       containers:
         - name: whodb
           image: clidey/whodb:0.138.0
+          env:
+            - name: VIEWER_PASSWORD
+              valueFrom:
+                secretKeyRef: {name: appraisal-db-viewer, key: password}
+            # Declared after VIEWER_PASSWORD, which Kubernetes substitutes into it.
+            - name: WHODB_POSTGRES
+              value: '[{"alias":"appraisal","host":"appraisal-db-rw","port":"5432","user":"viewer","password":"$(VIEWER_PASSWORD)","database":"appraisal","config":{"SSL Mode":"require"}}]'
           ports:
             - {name: http, containerPort: 8080}
           resources:
