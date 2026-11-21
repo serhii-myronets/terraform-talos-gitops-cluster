@@ -10,3 +10,12 @@ helmCharts:
     namespace: cnpg-system
     includeCRDs: true
     valuesFile: values.yaml
+  # Its backups: base backups and the WAL archive to an object store, here the lab's
+  # prefix in R2 (decisions/0014). Its certificates come from cert-manager.
+  - name: plugin-barman-cloud
+    repo: https://cloudnative-pg.github.io/charts
+    version: 0.8.1
+    releaseName: plugin-barman-cloud
+    namespace: cnpg-system
+    includeCRDs: true
+    valuesFile: values-barman-cloud.yaml

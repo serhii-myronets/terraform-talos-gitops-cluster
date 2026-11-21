@@ -3,9 +3,13 @@ kind: Application
 metadata:
   name: cloudnative-pg
   namespace: argocd
+  annotations:
+    # The wave the Barman Cloud plugin had on its own: before any database that
+    # backs up.
+    argocd.argoproj.io/sync-wave: "2"
 spec:
   project: default
-  # The Postgres operator: it runs a database for each Cluster resource it
+  # The Postgres operator and its Barman Cloud plugin for backups: it runs a database for each Cluster resource it
   # finds, wherever it is. The databases are not here - each lives with the
   # service it belongs to, in that service's app/.
   source:
