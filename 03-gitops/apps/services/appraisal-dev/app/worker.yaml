@@ -51,8 +51,9 @@ spec:
             - {name: MODEL_ADAPTER, value: claude_code}
             - {name: MODEL_NAME, value: sonnet}
             - {name: AGENT_MODEL, value: opus}
-            # The maps (geo-db) are appraisal's; the dev instance runs without the check.
-            - {name: LOCATION_CHECK, value: "0"}
+            # The maps are appraisal's geo-db, read as dev_reader (pg_read_all_data).
+            - name: GEO_DATABASE_URL
+              value: "postgresql://dev_reader:$(GEO_READER_PASSWORD)@geo-db-rw.appraisal.svc:5432/geo?sslmode=require"
             - {name: JOB_SLOTS, value: "2"}
           volumeMounts:
             - {name: data, mountPath: /data}

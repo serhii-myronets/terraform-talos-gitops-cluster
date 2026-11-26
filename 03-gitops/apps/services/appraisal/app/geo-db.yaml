@@ -27,6 +27,20 @@ spec:
     requests: {cpu: 100m, memory: 512Mi}
     limits: {memory: 2Gi}
   managed:
+    # appraisal-dev's worker reads the maps as dev_reader: pg_read_all_data, no write
+    # (appraisal-flow's decision 0021). Its password comes from Infisical (externalsecret.yaml).
+    roles:
+      - name: dev_reader
+        ensure: present
+        login: true
+        superuser: false
+        createdb: false
+        createrole: false
+        inherit: true
+        inRoles: [pg_read_all_data]
+        connectionLimit: 5
+        passwordSecret:
+          name: geo-dev-reader
     services:
       additional:
         - selectorType: rw
