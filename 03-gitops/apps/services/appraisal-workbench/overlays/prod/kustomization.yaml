@@ -6,9 +6,9 @@ kind: Kustomization
 namespace: appraisal
 images:
   - name: ghcr.io/serhii-myronets/appraisal-api
-    digest: sha256:768d33030f598e20fd39373143325aa05a14c10919020538cb1ce61a6bec6077
+    digest: sha256:0d3018361fc39c709cd6fd523513d9baba26e12e8711d0ed46f50d4d30dd4c5a
   - name: ghcr.io/serhii-myronets/appraisal-worker
-    digest: sha256:08b63060d7cc1b93da79e38bdf8a49fa30ab1d207ade925975a3c8a0abe25bab
+    digest: sha256:7fbe15df5356efa0d9aab7721d9a6e5027534d8c71582e29e1bc61d557db82f8
 resources:
   - ../../base
   - externalsecret.yaml
