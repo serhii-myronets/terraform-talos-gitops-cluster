@@ -1,5 +1,5 @@
-# The API with the built web application. In a pod it listens on every interface, so it
-# requires API_TOKEN (appraisal-flow's decision 0019); the owner types it once per browser.
+# The API with the built web application. It listens on every interface without a token,
+# by the owner's switch (appraisal-flow's decision 0022).
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -30,6 +30,9 @@ spec:
             - {name: STORAGE_URL, value: "s3://$(FILES_BUCKET)"}
             - {name: AWS_REGION, value: auto}
             - {name: ALLOWED_HOSTS, value: host.home}
+            # No API token: reached only through the home network's gateway, which the
+            # owner alone uses (appraisal-flow's decision 0022).
+            - {name: OPEN_BEHIND_GATEWAY, value: "1"}
           ports:
             - {name: http, containerPort: 8080}
           volumeMounts:
