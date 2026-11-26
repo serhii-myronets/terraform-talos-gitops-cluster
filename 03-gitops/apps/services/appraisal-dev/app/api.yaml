@@ -27,7 +27,7 @@ spec:
           env:
             - name: DATABASE_URL
               valueFrom: {secretKeyRef: {name: appraisal-dev-db-app, key: uri}}
-            - {name: STORAGE_URL, value: "s3://$(FILES_BUCKET)/dev"}
+            - {name: STORAGE_URL, value: "s3://$(FILES_BUCKET)"}
             - {name: AWS_REGION, value: auto}
             - {name: ALLOWED_HOSTS, value: appraisal-dev.home}
           ports:
