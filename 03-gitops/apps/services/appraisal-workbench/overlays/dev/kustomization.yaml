@@ -30,7 +30,7 @@ patches:
                   - name: GEO_DATABASE_URL
                     value: "postgresql://dev_reader:$(GEO_READER_PASSWORD)@geo-db-rw.appraisal.svc:5432/geo?sslmode=require"
                   # The UAD core's new path, block by block (appraisal-flow docs/tasks/uad-core.md).
-                  - {name: SLOT_BLOCKS, value: "10"}
+                  - {name: SLOT_BLOCKS, value: "08,10"}
   - target: {kind: Deployment, name: api}
     patch: |-
       apiVersion: apps/v1
