@@ -1,0 +1,30 @@
+# appraisal-dev follows the images of appraisal-flow's main branch: when GitHub Actions
+# pushes a new build under the tag main, the updater points the Application at its digest
+# (written into the Application itself, not into Git), and Argo CD rolls it out. A
+# branch is tried with `kubectl set image` until the next build of main.
+apiVersion: argocd-image-updater.argoproj.io/v1alpha1
+kind: ImageUpdater
+metadata:
+  name: appraisal-dev
+  annotations:
+    # Its CRD comes with the chart in the same sync.
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  writeBackConfig:
+    method: argocd
+  applicationRefs:
+    - namePattern: appraisal-dev
+      commonUpdateSettings:
+        updateStrategy: digest
+      images:
+        - alias: api
+          imageName: ghcr.io/serhii-myronets/appraisal-api:main
+          manifestTargets:
+            kustomize:
+              name: ghcr.io/serhii-myronets/appraisal-api
+        - alias: worker
+          imageName: ghcr.io/serhii-myronets/appraisal-worker:main
+          manifestTargets:
+            kustomize:
+              name: ghcr.io/serhii-myronets/appraisal-worker

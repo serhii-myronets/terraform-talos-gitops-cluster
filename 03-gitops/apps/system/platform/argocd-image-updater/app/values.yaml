@@ -1,0 +1,13 @@
+config:
+  log.level: info
+  # GHCR's private packages, read with the pull token (externalsecret.yaml). The
+  # updater reads secrets only in its own namespace.
+  registries:
+    - name: GitHub Container Registry
+      api_url: https://ghcr.io
+      prefix: ghcr.io
+      ping: no
+      credentials: pullsecret:argocd/ghcr-pull
+resources:
+  requests: {cpu: 10m, memory: 64Mi}
+  limits: {memory: 256Mi}

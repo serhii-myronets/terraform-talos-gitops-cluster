@@ -25,7 +25,7 @@ spec:
       initContainers:
         # The schema first: the worker refuses to start while the database lacks a file.
         - name: migrate
-          image: ghcr.io/serhii-myronets/appraisal-worker:k8s-move
+          image: ghcr.io/serhii-myronets/appraisal-worker:main
           securityContext:
             allowPrivilegeEscalation: false
             capabilities: {drop: [ALL]}
@@ -36,7 +36,7 @@ spec:
             - {name: LOCATION_CHECK, value: "0"}
       containers:
         - name: worker
-          image: ghcr.io/serhii-myronets/appraisal-worker:k8s-move
+          image: ghcr.io/serhii-myronets/appraisal-worker:main
           securityContext:
             allowPrivilegeEscalation: false
             capabilities: {drop: [ALL]}

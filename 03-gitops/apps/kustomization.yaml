@@ -19,6 +19,7 @@ resources:
   - system/storage/proxmox-csi/application.yaml
   # platform
   - system/platform/argocd/application.yaml
+  - system/platform/argocd-image-updater/application.yaml
   - system/platform/metrics-server/application.yaml
   - system/platform/cloudnative-pg/application.yaml
   - system/platform/strimzi/application.yaml

@@ -18,7 +18,7 @@ spec:
         seccompProfile: {type: RuntimeDefault}
       containers:
         - name: api
-          image: ghcr.io/serhii-myronets/appraisal-api:k8s-move
+          image: ghcr.io/serhii-myronets/appraisal-api:main
           securityContext:
             allowPrivilegeEscalation: false
             capabilities: {drop: [ALL]}
