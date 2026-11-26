@@ -1,0 +1,25 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: appraisal-dev
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "10"
+spec:
+  project: default
+  # The Appraisal Workbench's development instance (appraisal-flow's decision 0021):
+  # branches are tried here before the owner's instance moves. Its own database and its
+  # own prefix (dev/) in the files' bucket; it never touches appraisal's data. Synced
+  # automatically but not self-healed, so `kubectl set image` of a branch's image holds
+  # until the next change in Git (appraisal-flow's `make dev-deploy`).
+  source:
+    repoURL: https://github.com/serhii-myronets/terraform-talos-gitops-cluster.git
+    targetRevision: homelab
+    path: 03-gitops/apps/services/appraisal-dev/app
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: appraisal-dev
+  syncPolicy:
+    automated: {}
+    syncOptions:
+      - CreateNamespace=true

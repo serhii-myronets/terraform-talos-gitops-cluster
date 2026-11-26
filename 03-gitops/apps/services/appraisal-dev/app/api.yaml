@@ -1,0 +1,54 @@
+# The API with the built web application. In a pod it listens on every interface, so it
+# requires API_TOKEN (appraisal-flow's decision 0019); the owner types it once per browser.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: api}
+  template:
+    metadata:
+      labels: {app: api}
+    spec:
+      imagePullSecrets: [{name: ghcr-pull}]
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+        - name: api
+          image: ghcr.io/serhii-myronets/appraisal-api:k8s-move
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: {drop: [ALL]}
+          envFrom:
+            - secretRef: {name: appraisal-dev}
+          env:
+            - name: DATABASE_URL
+              valueFrom: {secretKeyRef: {name: appraisal-dev-db-app, key: uri}}
+            - {name: STORAGE_URL, value: "s3://$(FILES_BUCKET)/dev"}
+            - {name: AWS_REGION, value: auto}
+            - {name: ALLOWED_HOSTS, value: appraisal-dev.home}
+          ports:
+            - {name: http, containerPort: 8080}
+          volumeMounts:
+            - {name: capture, mountPath: /run/secrets/capture-token, readOnly: true}
+          # The API answers only its own host names; the probe calls it as localhost.
+          readinessProbe:
+            httpGet: {path: /healthz, port: http, httpHeaders: [{name: Host, value: localhost}]}
+          resources:
+            requests: {cpu: 20m, memory: 64Mi}
+            limits: {memory: 512Mi}
+      volumes:
+        - name: capture
+          secret: {secretName: appraisal-dev-capture}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api
+spec:
+  selector: {app: api}
+  ports:
+    - {name: http, port: 80, targetPort: http}

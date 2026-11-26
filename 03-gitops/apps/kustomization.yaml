@@ -27,3 +27,4 @@ resources:
   - system/observability/hubble/application.yaml
   # services
   - services/appraisal/application.yaml
+  - services/appraisal-dev/application.yaml

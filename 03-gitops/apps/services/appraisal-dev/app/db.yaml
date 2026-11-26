@@ -1,0 +1,20 @@
+# The development instance's own database: branches' migrations run here, never on
+# appraisal-db. Data that can be made again (reports copied from the owner's instance,
+# a rule set restored from its export), so no backup and no retained volume.
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: appraisal-dev-db
+spec:
+  instances: 1
+  imageName: ghcr.io/cloudnative-pg/postgresql:17.6
+  storage:
+    size: 5Gi
+    storageClass: proxmox-zfs
+  bootstrap:
+    initdb:
+      database: appraisal
+      owner: appraisal
+  resources:
+    requests: {cpu: 50m, memory: 256Mi}
+    limits: {memory: 1Gi}

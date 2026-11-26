@@ -1,0 +1,64 @@
+# The worker: one replica, replaced rather than rolled (two workers must never take the
+# same jobs' workspaces), with time to finish a step before it stops. Its image is built by
+# appraisal-flow's GitHub Actions; a branch's image is set by `make dev-deploy` there.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker
+spec:
+  replicas: 1
+  strategy: {type: Recreate}
+  selector:
+    matchLabels: {app: worker}
+  template:
+    metadata:
+      labels: {app: worker}
+    spec:
+      imagePullSecrets: [{name: ghcr-pull}]
+      terminationGracePeriodSeconds: 600
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile: {type: RuntimeDefault}
+      initContainers:
+        # The schema first: the worker refuses to start while the database lacks a file.
+        - name: migrate
+          image: ghcr.io/serhii-myronets/appraisal-worker:k8s-move
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: {drop: [ALL]}
+          command: [python, -m, appraisal_worker.migrate, apply]
+          env:
+            - name: DATABASE_URL
+              valueFrom: {secretKeyRef: {name: appraisal-dev-db-app, key: uri}}
+            - {name: LOCATION_CHECK, value: "0"}
+      containers:
+        - name: worker
+          image: ghcr.io/serhii-myronets/appraisal-worker:k8s-move
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: {drop: [ALL]}
+          envFrom:
+            - secretRef: {name: appraisal-dev}
+          env:
+            - name: DATABASE_URL
+              valueFrom: {secretKeyRef: {name: appraisal-dev-db-app, key: uri}}
+            # Declared after FILES_BUCKET (from the secret), which Kubernetes substitutes.
+            - {name: STORAGE_URL, value: "s3://$(FILES_BUCKET)/dev"}
+            - {name: AWS_REGION, value: auto}
+            - {name: MODEL_ADAPTER, value: claude_code}
+            - {name: MODEL_NAME, value: sonnet}
+            - {name: AGENT_MODEL, value: opus}
+            # The maps (geo-db) are appraisal's; the dev instance runs without the check.
+            - {name: LOCATION_CHECK, value: "0"}
+            - {name: JOB_SLOTS, value: "2"}
+          volumeMounts:
+            - {name: data, mountPath: /data}
+          resources:
+            requests: {cpu: 250m, memory: 1Gi}
+            limits: {memory: 4Gi}
+      volumes:
+        - name: data
+          persistentVolumeClaim: {claimName: worker-data}

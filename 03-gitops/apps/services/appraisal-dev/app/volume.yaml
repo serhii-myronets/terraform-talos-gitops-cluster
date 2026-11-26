@@ -1,0 +1,12 @@
+# The worker's volume: job workspaces, the kept model replies, the tax roll cache, the
+# rule set's export and the TrueValue snapshot unpacked from the bucket. A cache: losing it
+# costs time and repeated model calls, never data.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: worker-data
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: proxmox-zfs
+  resources:
+    requests: {storage: 20Gi}
