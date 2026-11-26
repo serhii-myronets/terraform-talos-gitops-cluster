@@ -1,9 +1,14 @@
 # The owner's instance, beside its databases in appraisal (services/appraisal/app).
-# Not yet in 03-gitops/apps/kustomization.yaml: added at the cutover from the Mac, when
-# the Mac's worker has stopped (two workers on one database take the same jobs).
+# Its builds are pinned: a new version is the digest of a main build already tried on
+# appraisal-dev, written here when the owner says, then synced by hand.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: appraisal
+images:
+  - name: ghcr.io/serhii-myronets/appraisal-api
+    digest: sha256:27cfada8e9a75f83ebe2a63da6c238d3578d1782eaefb39969dcafcd176ec8c6
+  - name: ghcr.io/serhii-myronets/appraisal-worker
+    digest: sha256:8192b79f4016979f3d05f826e3aa07f3e6b05051f1b1aee7231c786f3d08da50
 resources:
   - ../../base
   - externalsecret.yaml

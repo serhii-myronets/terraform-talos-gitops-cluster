@@ -29,3 +29,4 @@ resources:
   # services
   - services/appraisal/application.yaml
   - services/appraisal-dev/application.yaml
+  - services/appraisal-workbench/application-prod.yaml
