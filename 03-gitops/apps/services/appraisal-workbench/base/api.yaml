@@ -23,13 +23,13 @@ spec:
             allowPrivilegeEscalation: false
             capabilities: {drop: [ALL]}
           envFrom:
-            - secretRef: {name: appraisal-dev}
+            - secretRef: {name: app-secrets}
           env:
             - name: DATABASE_URL
-              valueFrom: {secretKeyRef: {name: appraisal-dev-db-app, key: uri}}
+              valueFrom: {secretKeyRef: {name: db-app, key: uri}}
             - {name: STORAGE_URL, value: "s3://$(FILES_BUCKET)"}
             - {name: AWS_REGION, value: auto}
-            - {name: ALLOWED_HOSTS, value: appraisal-dev.home}
+            - {name: ALLOWED_HOSTS, value: host.home}
           ports:
             - {name: http, containerPort: 8080}
           volumeMounts:
@@ -42,7 +42,7 @@ spec:
             limits: {memory: 512Mi}
       volumes:
         - name: capture
-          secret: {secretName: appraisal-dev-capture}
+          secret: {secretName: app-capture}
 ---
 apiVersion: v1
 kind: Service

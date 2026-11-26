@@ -1,4 +1,4 @@
-# appraisal-dev.home, LAN only, on the lab's Gateway; the name is in cert-manager's
+# The instance's .home name (set by its overlay), LAN only, on the lab's Gateway; the name is in cert-manager's
 # home-tls certificate.
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -8,7 +8,7 @@ spec:
   parentRefs:
     - {name: main-gateway, namespace: gateway-system}
   hostnames:
-    - appraisal-dev.home
+    - host.home
   rules:
     - backendRefs:
         - {name: api, port: 80}

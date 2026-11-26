@@ -1,0 +1,11 @@
+# The Appraisal Workbench's API (with the web app) and worker, the same for both
+# instances (appraisal-flow's decision 0021). An overlay gives the namespace, the secrets
+# (app-secrets, app-capture, ghcr-pull), the database (db-app is the overlay's patch), the
+# maps and the .home name.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - worker.yaml
+  - api.yaml
+  - volume.yaml
+  - httproute.yaml

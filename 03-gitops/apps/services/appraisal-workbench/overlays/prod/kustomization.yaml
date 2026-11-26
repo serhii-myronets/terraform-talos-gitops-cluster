@@ -1,0 +1,48 @@
+# The owner's instance, beside its databases in appraisal (services/appraisal/app).
+# Not yet in 03-gitops/apps/kustomization.yaml: added at the cutover from the Mac, when
+# the Mac's worker has stopped (two workers on one database take the same jobs).
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: appraisal
+resources:
+  - ../../base
+  - externalsecret.yaml
+patches:
+  - target: {kind: Deployment, name: worker}
+    patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata: {name: worker}
+      spec:
+        template:
+          spec:
+            initContainers:
+              - name: migrate
+                env:
+                  - name: DATABASE_URL
+                    valueFrom: {secretKeyRef: {name: appraisal-db-app, key: uri}}
+            containers:
+              - name: worker
+                env:
+                  - name: DATABASE_URL
+                    valueFrom: {secretKeyRef: {name: appraisal-db-app, key: uri}}
+                  # The maps: geo-db beside it, as its owner (the worker copies maps into it).
+                  - name: GEO_DATABASE_URL
+                    valueFrom: {secretKeyRef: {name: geo-db-app, key: uri}}
+  - target: {kind: Deployment, name: api}
+    patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata: {name: api}
+      spec:
+        template:
+          spec:
+            containers:
+              - name: api
+                env:
+                  - name: DATABASE_URL
+                    valueFrom: {secretKeyRef: {name: appraisal-db-app, key: uri}}
+                  - {name: ALLOWED_HOSTS, value: appraisal.home}
+  - target: {kind: HTTPRoute, name: api}
+    patch: |-
+      - {op: replace, path: /spec/hostnames, value: [appraisal.home]}

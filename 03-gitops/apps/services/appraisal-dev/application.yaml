@@ -15,7 +15,7 @@ spec:
   source:
     repoURL: https://github.com/serhii-myronets/terraform-talos-gitops-cluster.git
     targetRevision: homelab
-    path: 03-gitops/apps/services/appraisal-dev/app
+    path: 03-gitops/apps/services/appraisal-workbench/overlays/dev
   destination:
     server: https://kubernetes.default.svc
     namespace: appraisal-dev

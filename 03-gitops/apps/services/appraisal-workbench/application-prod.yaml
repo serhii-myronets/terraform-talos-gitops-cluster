@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: appraisal-workbench
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "11"
+spec:
+  project: default
+  # The owner's instance of the Appraisal Workbench, beside its databases in appraisal
+  # (appraisal-flow's decision 0021). NOT listed in 03-gitops/apps/kustomization.yaml
+  # until the cutover from the Mac: a worker here and the Mac's would take the same jobs.
+  # No automated sync: the owner syncs a new version himself.
+  source:
+    repoURL: https://github.com/serhii-myronets/terraform-talos-gitops-cluster.git
+    targetRevision: homelab
+    path: 03-gitops/apps/services/appraisal-workbench/overlays/prod
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: appraisal
