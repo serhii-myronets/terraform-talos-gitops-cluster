@@ -8,7 +8,7 @@ images:
   - name: ghcr.io/serhii-myronets/appraisal-api
     digest: sha256:2a09911cb3276bccde7e5faf44aded96d3d774d820ea67fc5723159fb318f6df
   - name: ghcr.io/serhii-myronets/appraisal-worker
-    digest: sha256:159cb6f34ad93b772de3b2f667da2807fdfcc5baa7fdbce1c342c24dbbb37b36
+    digest: sha256:ffbf8cef9a95ce7690c7c2039cf4709f833bd9ab9777620a77fea31bb21199dc
 resources:
   - ../../base
   - externalsecret.yaml
